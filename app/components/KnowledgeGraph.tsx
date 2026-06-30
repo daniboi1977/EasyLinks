@@ -89,16 +89,14 @@ export default function KnowledgeGraph({ bookmarks }: { bookmarks: BookmarkWithT
       .forceSimulation(nodes)
       .force(
         'link',
-        d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(75)
+        d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(100).strength(1)
       )
-      .force('charge', d3.forceManyBody().strength(-220).distanceMax(300))
+      .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
-        d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 6).iterations(3)
-      )
-      .force('x', d3.forceX(width / 2).strength(0.015))
-      .force('y', d3.forceY(height / 2).strength(0.015));
+        d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 8).iterations(2)
+      );
 
     const svg = d3.select(el).attr('viewBox', `0 0 ${width} ${height}`);
 
