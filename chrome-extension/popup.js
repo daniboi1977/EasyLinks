@@ -1,5 +1,9 @@
-// Update this to your production URL when deployed
-const APP_URL = 'http://localhost:3000';
+const APP_URL = 'https://bookmarks-daniclark.vercel.app';
+const PROTECTION_BYPASS_SECRET = '6VxcuTKoNCmWRO2B6q6A0FgmB33rHA5S';
+const FETCH_HEADERS = {
+  'Content-Type': 'application/json',
+  'x-vercel-protection-bypass': PROTECTION_BYPASS_SECRET,
+};
 
 const urlInput = document.getElementById('url');
 const analyzeBtn = document.getElementById('analyzeBtn');
@@ -43,7 +47,7 @@ analyzeBtn.addEventListener('click', async () => {
 
     const res = await fetch(`${APP_URL}/api/analyze`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: FETCH_HEADERS,
       body: JSON.stringify(body),
     });
 
@@ -96,7 +100,7 @@ addBtn.addEventListener('click', async () => {
   try {
     const res = await fetch(`${APP_URL}/api/bookmarks`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: FETCH_HEADERS,
       body: JSON.stringify({
         url,
         title,
