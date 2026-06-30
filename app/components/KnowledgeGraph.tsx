@@ -91,7 +91,7 @@ export default function KnowledgeGraph({ bookmarks }: { bookmarks: BookmarkWithT
         'link',
         d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(75)
       )
-      .force('charge', d3.forceManyBody().strength(-170).distanceMax(350))
+      .force('charge', d3.forceManyBody().strength(-80).distanceMax(250))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
