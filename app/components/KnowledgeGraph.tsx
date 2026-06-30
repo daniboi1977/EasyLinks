@@ -97,8 +97,8 @@ export default function KnowledgeGraph({ bookmarks }: { bookmarks: BookmarkWithT
         'collision',
         d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 6).iterations(3)
       )
-      .force('x', d3.forceX(width / 2).strength(0.05))
-      .force('y', d3.forceY(height / 2).strength(0.05));
+      .force('x', d3.forceX(width / 2).strength(0.015))
+      .force('y', d3.forceY(height / 2).strength(0.015));
 
     const svg = d3.select(el).attr('viewBox', `0 0 ${width} ${height}`);
 
