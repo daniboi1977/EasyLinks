@@ -102,12 +102,11 @@ export default function KnowledgeGraph({ bookmarks }: { bookmarks: BookmarkWithT
 
     // Zoom container
     const g = svg.append('g');
-    svg.call(
-      d3
-        .zoom<SVGSVGElement, unknown>()
-        .scaleExtent([0.15, 5])
-        .on('zoom', (event) => g.attr('transform', event.transform))
-    );
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.15, 5])
+      .on('zoom', (event) => g.attr('transform', event.transform));
+    svg.call(zoom);
 
     const link = g
       .append('g')
@@ -162,6 +161,28 @@ export default function KnowledgeGraph({ bookmarks }: { bookmarks: BookmarkWithT
         .attr('x2', (d) => (d.target as GraphNode).x ?? 0)
         .attr('y2', (d) => (d.target as GraphNode).y ?? 0);
       node.attr('transform', (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
+    });
+
+    simulation.on('end', () => {
+      const xs = nodes.map((d) => d.x ?? 0);
+      const ys = nodes.map((d) => d.y ?? 0);
+      const padding = 40;
+      const x0 = Math.min(...xs) - padding;
+      const x1 = Math.max(...xs) + padding;
+      const y0 = Math.min(...ys) - padding;
+      const y1 = Math.max(...ys) + padding;
+      const dx = x1 - x0;
+      const dy = y1 - y0;
+      if (dx <= 0 || dy <= 0) return;
+
+      const scale = Math.min(width / dx, height / dy, 5);
+      const tx = width / 2 - scale * (x0 + dx / 2);
+      const ty = height / 2 - scale * (y0 + dy / 2);
+
+      svg
+        .transition()
+        .duration(500)
+        .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     });
 
     return () => {
