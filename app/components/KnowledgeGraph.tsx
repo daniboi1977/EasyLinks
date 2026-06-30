@@ -91,11 +91,11 @@ export default function KnowledgeGraph({ bookmarks }: { bookmarks: BookmarkWithT
         'link',
         d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(75)
       )
-      .force('charge', d3.forceManyBody().strength(-80).distanceMax(250))
+      .force('charge', d3.forceManyBody().strength(-110).distanceMax(250))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force(
         'collision',
-        d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 6)
+        d3.forceCollide<GraphNode>().radius((d) => nodeRadius(d) + 6).iterations(3)
       );
 
     const svg = d3.select(el).attr('viewBox', `0 0 ${width} ${height}`);
