@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Add Bookmark",
+  "version": "1.0",
+  "description": "Save the current page to your bookmark app",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Add Bookmark"
+  },
+  "permissions": ["activeTab"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*.vercel.app/*"
+  ]
+}
