@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@mozilla/readability": "^0.6.0",
     "@supabase/supabase-js": "^2.108.2",
     "@types/d3": "^7.4.3",

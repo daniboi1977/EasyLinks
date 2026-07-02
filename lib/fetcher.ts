@@ -91,9 +91,26 @@ async function fetchReddit(url: string): Promise<{ text: string; contentType: Co
   return { text: text.slice(0, 8000), contentType: 'social' };
 }
 
+async function fetchYouTube(url: string): Promise<{ text: string; contentType: ContentType }> {
+  const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+  const res = await fetch(oembedUrl).catch(() => null);
+
+  if (!res || !res.ok) {
+    return { text: url, contentType: 'youtube' };
+  }
+
+  const data = await res.json().catch(() => null);
+  if (!data?.title) {
+    return { text: url, contentType: 'youtube' };
+  }
+
+  const text = `Title: ${data.title}\nChannel: ${data.author_name ?? 'unknown'}\nURL: ${url}`;
+  return { text, contentType: 'youtube' };
+}
+
 export async function fetchContent(url: string): Promise<{ text: string; contentType: ContentType }> {
   if (YOUTUBE_RE.test(url)) {
-    return { text: url, contentType: 'youtube' };
+    return fetchYouTube(url);
   }
 
   if (REDDIT_RE.test(url)) {
