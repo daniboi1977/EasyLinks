@@ -6,7 +6,6 @@ const TEXT_MODELS = [
   'meta-llama/llama-3.3-70b-instruct:free',
   'deepseek/deepseek-chat-v3.1:free',
   'qwen/qwen-2.5-72b-instruct:free',
-  'mistralai/mistral-small-3.1-24b-instruct:free',
 ];
 
 const VISION_MODELS = [
