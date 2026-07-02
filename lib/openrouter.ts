@@ -2,8 +2,18 @@ import type { AnalyzeResult, ContentType } from '@/types';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!;
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const TEXT_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
-const VISION_MODEL = 'qwen/qwen2.5-vl-72b-instruct:free';
+const TEXT_MODELS = [
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'deepseek/deepseek-chat-v3.1:free',
+  'qwen/qwen-2.5-72b-instruct:free',
+  'mistralai/mistral-small-3.1-24b-instruct:free',
+];
+
+const VISION_MODELS = [
+  'qwen/qwen2.5-vl-72b-instruct:free',
+  'qwen/qwen2.5-vl-32b-instruct:free',
+  'google/gemini-2.0-flash-exp:free',
+];
 
 const PROMPT = `You are a bookmark tagging assistant. Analyze the provided content and return JSON only.
 No markdown, no explanation.
@@ -19,7 +29,7 @@ Topics should be reusable across bookmarks (e.g., "Machine Learning", "Housing P
 const MAX_RETRIES = 2;
 
 async function callOpenRouter(
-  model: string,
+  models: string[],
   content: string | unknown[],
   attempt = 0
 ): Promise<AnalyzeResult> {
@@ -30,7 +40,7 @@ async function callOpenRouter(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model,
+      models,
       messages: [{ role: 'user', content }],
     }),
   });
@@ -39,7 +49,7 @@ async function callOpenRouter(
     const body = await res.json().catch(() => null);
     const retryAfter = Math.min(body?.error?.metadata?.retry_after_seconds ?? 5, 20);
     await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-    return callOpenRouter(model, content, attempt + 1);
+    return callOpenRouter(models, content, attempt + 1);
   }
 
   if (!res.ok) {
@@ -61,7 +71,7 @@ export async function analyzeContent(
       ? PROMPT + '\n\nContent to analyze (YouTube video info):\n\n' + content
       : PROMPT + '\n\nContent to analyze:\n\n' + content;
 
-  return callOpenRouter(TEXT_MODEL, text);
+  return callOpenRouter(TEXT_MODELS, text);
 }
 
 export async function analyzeFile(
@@ -78,7 +88,7 @@ export async function analyzeFile(
     };
   }
 
-  return callOpenRouter(VISION_MODEL, [
+  return callOpenRouter(VISION_MODELS, [
     { type: 'text', text: PROMPT },
     { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
   ]);
