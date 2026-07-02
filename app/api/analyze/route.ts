@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchContent, FetchBlockedError } from '@/lib/fetcher';
-import { analyzeContent, analyzeFile } from '@/lib/openrouter';
+import { analyzeContent, analyzeFile } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
 import { corsResponse, corsOptions } from '@/lib/cors';
 import type { ContentType } from '@/types';
@@ -77,7 +77,7 @@ async function handleFileUpload(req: NextRequest) {
   const fileUrl = urlData.publicUrl;
 
   const base64 = Buffer.from(bytes).toString('base64');
-  const result = await analyzeFile(base64, mimeType, file.name);
+  const result = await analyzeFile(base64, mimeType);
 
   return corsResponse({ ...result, contentType, fileUrl });
 }
