@@ -16,7 +16,13 @@ No markdown, no explanation.
 
 Topics should be reusable across bookmarks (e.g., "Machine Learning", "Housing Policy", "Mental Health") — not one-off descriptions. Return 2-5 topics.`;
 
-async function callOpenRouter(model: string, content: string | unknown[]): Promise<AnalyzeResult> {
+const MAX_RETRIES = 2;
+
+async function callOpenRouter(
+  model: string,
+  content: string | unknown[],
+  attempt = 0
+): Promise<AnalyzeResult> {
   const res = await fetch(OPENROUTER_URL, {
     method: 'POST',
     headers: {
@@ -28,6 +34,13 @@ async function callOpenRouter(model: string, content: string | unknown[]): Promi
       messages: [{ role: 'user', content }],
     }),
   });
+
+  if (res.status === 429 && attempt < MAX_RETRIES) {
+    const body = await res.json().catch(() => null);
+    const retryAfter = Math.min(body?.error?.metadata?.retry_after_seconds ?? 5, 20);
+    await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+    return callOpenRouter(model, content, attempt + 1);
+  }
 
   if (!res.ok) {
     throw new Error(`OpenRouter request failed: ${res.status} ${await res.text()}`);

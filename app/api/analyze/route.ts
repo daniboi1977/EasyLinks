@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { corsResponse, corsOptions } from '@/lib/cors';
 import type { ContentType } from '@/types';
 
+export const maxDuration = 60;
+
 export async function OPTIONS() {
   return corsOptions();
 }
