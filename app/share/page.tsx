@@ -3,7 +3,6 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BookmarkForm from '@/app/components/BookmarkForm';
-import type { ContentType } from '@/types';
 
 function extractUrl(text: string | null): string {
   if (!text) return '';
@@ -23,7 +22,6 @@ function ShareContent() {
     title: string;
     summary: string;
     topics: string[];
-    content_type: ContentType;
   }) {
     setError('');
     const res = await fetch('/api/bookmarks', {

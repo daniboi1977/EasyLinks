@@ -2,15 +2,6 @@
 
 import type { BookmarkWithTopics } from '@/types';
 
-const BADGE_COLORS: Record<string, string> = {
-  article: 'bg-green-100 dark:bg-zinc-800 text-green-700 dark:text-emerald-400',
-  youtube: 'bg-red-100 dark:bg-zinc-800 text-red-700 dark:text-red-400',
-  social: 'bg-purple-100 dark:bg-zinc-800 text-purple-700 dark:text-purple-400',
-  pdf: 'bg-orange-100 dark:bg-zinc-800 text-orange-700 dark:text-orange-400',
-  image: 'bg-sky-100 dark:bg-zinc-800 text-sky-700 dark:text-sky-400',
-  repo: 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300',
-};
-
 interface Props {
   bookmark: BookmarkWithTopics;
   onEdit: (bookmark: BookmarkWithTopics) => void;
@@ -18,8 +9,6 @@ interface Props {
 }
 
 export default function BookmarkCard({ bookmark, onEdit, onDelete }: Props) {
-  const badgeClass = BADGE_COLORS[bookmark.content_type ?? 'article'] ?? 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300';
-
   function handleDelete() {
     if (window.confirm('Delete this bookmark?')) {
       onDelete(bookmark.id);
@@ -37,11 +26,6 @@ export default function BookmarkCard({ bookmark, onEdit, onDelete }: Props) {
         >
           {bookmark.title ?? bookmark.url}
         </a>
-        {bookmark.content_type && (
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badgeClass}`}>
-            {bookmark.content_type}
-          </span>
-        )}
       </div>
 
       {bookmark.summary && (

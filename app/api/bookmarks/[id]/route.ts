@@ -7,7 +7,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const { data, error } = await supabase
     .from('bookmarks')
-    .select(`id, url, title, summary, content_type, created_at, updated_at, bookmark_topics ( topics ( name ) )`)
+    .select(`id, url, title, summary, created_at, updated_at, bookmark_topics ( topics ( name ) )`)
     .eq('id', id)
     .single();
 

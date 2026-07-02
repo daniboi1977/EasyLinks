@@ -13,7 +13,6 @@ const msgEl = document.getElementById('msg');
 const titleInput = document.getElementById('title');
 const summaryInput = document.getElementById('summary');
 const topicsInput = document.getElementById('topics');
-const contentTypeSelect = document.getElementById('contentType');
 const pasteField = document.getElementById('pasteField');
 const pasteText = document.getElementById('pasteText');
 
@@ -68,7 +67,6 @@ analyzeBtn.addEventListener('click', async () => {
     titleInput.value = data.title ?? '';
     summaryInput.value = data.summary ?? '';
     topicsInput.value = (data.topics ?? []).join(', ');
-    if (data.contentType) contentTypeSelect.value = data.contentType;
 
     fields.classList.add('visible');
     clearMsg();
@@ -106,7 +104,6 @@ addBtn.addEventListener('click', async () => {
         title,
         summary: summaryInput.value.trim(),
         topics,
-        content_type: contentTypeSelect.value,
       }),
     });
 

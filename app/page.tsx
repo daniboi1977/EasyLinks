@@ -6,7 +6,7 @@ async function getInitialBookmarks(): Promise<BookmarkWithTopics[]> {
   const { data, error } = await supabase
     .from('bookmarks')
     .select(`
-      id, url, title, summary, content_type, created_at, updated_at,
+      id, url, title, summary, created_at, updated_at,
       bookmark_topics ( topics ( name ) )
     `)
     .order('created_at', { ascending: false });
@@ -21,7 +21,6 @@ async function getInitialBookmarks(): Promise<BookmarkWithTopics[]> {
     url: row.url,
     title: row.title,
     summary: row.summary,
-    content_type: row.content_type,
     created_at: row.created_at,
     updated_at: row.updated_at,
     topics: (row.bookmark_topics ?? [])

@@ -1,7 +1,10 @@
 import * as cheerio from 'cheerio';
 import { Readability } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
-import type { ContentType } from '@/types';
+
+// Internal only — used to pick a fetch strategy and tweak the Gemini prompt.
+// Not persisted or exposed via the API.
+type SourceKind = 'article' | 'youtube' | 'social' | 'pdf' | 'image' | 'repo';
 
 export class FetchBlockedError extends Error {
   constructor(url: string) {
@@ -49,7 +52,7 @@ async function getRedditToken(): Promise<string> {
   return redditToken.value;
 }
 
-async function fetchReddit(url: string): Promise<{ text: string; contentType: ContentType }> {
+async function fetchReddit(url: string): Promise<{ text: string; contentType: SourceKind }> {
   const token = await getRedditToken();
 
   // Convert to oauth.reddit.com path
@@ -91,7 +94,7 @@ async function fetchReddit(url: string): Promise<{ text: string; contentType: Co
   return { text: text.slice(0, 8000), contentType: 'social' };
 }
 
-async function fetchYouTube(url: string): Promise<{ text: string; contentType: ContentType }> {
+async function fetchYouTube(url: string): Promise<{ text: string; contentType: SourceKind }> {
   const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
   const res = await fetch(oembedUrl).catch(() => null);
 
@@ -108,7 +111,7 @@ async function fetchYouTube(url: string): Promise<{ text: string; contentType: C
   return { text, contentType: 'youtube' };
 }
 
-export async function fetchContent(url: string): Promise<{ text: string; contentType: ContentType }> {
+export async function fetchContent(url: string): Promise<{ text: string; contentType: SourceKind }> {
   if (YOUTUBE_RE.test(url)) {
     return fetchYouTube(url);
   }

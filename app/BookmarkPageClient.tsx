@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { BookmarkWithTopics, ContentType } from '@/types';
+import type { BookmarkWithTopics } from '@/types';
 import BookmarkCard from './components/BookmarkCard';
 import BookmarkForm from './components/BookmarkForm';
 import TopicFilter from './components/TopicFilter';
@@ -43,7 +43,6 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
     title: string;
     summary: string;
     topics: string[];
-    content_type: ContentType;
   }) {
     const res = await fetch('/api/bookmarks', {
       method: 'POST',
@@ -61,7 +60,6 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
     title: string;
     summary: string;
     topics: string[];
-    content_type: ContentType;
   }) {
     if (!editingBookmark) return;
     const res = await fetch(`/api/bookmarks/${editingBookmark.id}`, {

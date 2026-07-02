@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { corsResponse, corsOptions } from '@/lib/cors';
-import type { BookmarkWithTopics, ContentType } from '@/types';
+import type { BookmarkWithTopics } from '@/types';
 
 export async function OPTIONS() {
   return corsOptions();
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('bookmarks')
     .select(`
-      id, url, title, summary, content_type, created_at, updated_at,
+      id, url, title, summary, created_at, updated_at,
       bookmark_topics ( topics ( name ) )
     `)
     .order('created_at', { ascending: false });
@@ -32,7 +32,6 @@ export async function GET(req: NextRequest) {
     url: row.url,
     title: row.title,
     summary: row.summary,
-    content_type: row.content_type,
     created_at: row.created_at,
     updated_at: row.updated_at,
     topics: (row.bookmark_topics ?? [])
@@ -50,17 +49,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { url, title, summary, topics, content_type } = body as {
+    const { url, title, summary, topics } = body as {
       url: string;
       title: string;
       summary: string;
       topics: string[];
-      content_type: ContentType;
     };
 
     const { data: bookmark, error: bErr } = await supabase
       .from('bookmarks')
-      .insert({ url, title, summary, content_type })
+      .insert({ url, title, summary })
       .select()
       .single();
     if (bErr) return corsResponse({ error: bErr.message }, { status: 500 });

@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { AnalyzeResult, ContentType } from '@/types';
+import type { AnalyzeResult } from '@/types';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -17,11 +17,11 @@ Topics should be reusable across bookmarks (e.g., "Machine Learning", "Housing P
 
 export async function analyzeContent(
   content: string,
-  type: ContentType
+  isYouTube: boolean
 ): Promise<AnalyzeResult> {
   let parts;
 
-  if (type === 'youtube') {
+  if (isYouTube) {
     parts = [
       { text: PROMPT + '\n\nContent to analyze (YouTube video URL): ' + content },
     ];

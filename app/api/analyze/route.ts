@@ -3,7 +3,6 @@ import { fetchContent, FetchBlockedError } from '@/lib/fetcher';
 import { analyzeContent, analyzeFile } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
 import { corsResponse, corsOptions } from '@/lib/cors';
-import type { ContentType } from '@/types';
 
 export const maxDuration = 60;
 
@@ -23,16 +22,15 @@ export async function POST(req: NextRequest) {
     const { url, pastedText } = body as { url?: string; pastedText?: string };
 
     let text: string;
-    let contentType: ContentType;
+    let isYouTube = false;
 
     if (pastedText) {
       text = pastedText;
-      contentType = 'social';
     } else if (url) {
       try {
         const fetched = await fetchContent(url);
         text = fetched.text;
-        contentType = fetched.contentType;
+        isYouTube = fetched.contentType === 'youtube';
       } catch (err) {
         if (err instanceof FetchBlockedError) {
           return corsResponse({ error: 'blocked', message: err.message }, { status: 422 });
@@ -43,8 +41,8 @@ export async function POST(req: NextRequest) {
       return corsResponse({ error: 'url or pastedText required' }, { status: 400 });
     }
 
-    const result = await analyzeContent(text, contentType);
-    return corsResponse({ ...result, contentType });
+    const result = await analyzeContent(text, isYouTube);
+    return corsResponse(result);
   } catch (err) {
     console.error('[analyze]', err);
     return corsResponse({ error: 'Analysis failed', message: String(err) }, { status: 500 });
@@ -59,7 +57,6 @@ async function handleFileUpload(req: NextRequest) {
   }
 
   const mimeType = file.type;
-  const contentType = mimeType === 'application/pdf' ? 'pdf' : 'image';
 
   const ext = file.name.split('.').pop() ?? 'bin';
   const storagePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -79,5 +76,5 @@ async function handleFileUpload(req: NextRequest) {
   const base64 = Buffer.from(bytes).toString('base64');
   const result = await analyzeFile(base64, mimeType);
 
-  return corsResponse({ ...result, contentType, fileUrl });
+  return corsResponse({ ...result, fileUrl });
 }
