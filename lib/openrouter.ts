@@ -4,13 +4,13 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!;
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const TEXT_MODELS = [
   'meta-llama/llama-3.3-70b-instruct:free',
-  'deepseek/deepseek-chat-v3.1:free',
+  'mistralai/mistral-small-3.1-24b-instruct:free',
   'qwen/qwen-2.5-72b-instruct:free',
 ];
 
 const VISION_MODELS = [
   'qwen/qwen2.5-vl-72b-instruct:free',
-  'qwen/qwen2.5-vl-32b-instruct:free',
+  'meta-llama/llama-3.2-11b-vision-instruct:free',
   'google/gemini-2.0-flash-exp:free',
 ];
 
