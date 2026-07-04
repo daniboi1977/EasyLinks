@@ -23,6 +23,9 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
   });
   const [editingBookmark, setEditingBookmark] = useState<BookmarkWithTopics | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  // Which tab is active on mobile. Always starts on the bookmark list so
+  // opening the app doesn't dump you into a long list of topics first.
+  const [mobileView, setMobileView] = useState<'bookmarks' | 'topics'>('bookmarks');
 
   // Selecting a topic used to only update React state, so the URL never
   // changed and the browser never recorded a "back to all topics" step in
@@ -140,42 +143,68 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
 
         {/* Main */}
         <main className="flex-1 min-w-0">
-          {/* Mobile topic filter */}
+          {/* Mobile tabs: default to the bookmark list, Topics is opt-in */}
           {allTopics.length > 0 && (
-            <div className="md:hidden mb-4 flex gap-2 flex-wrap">
+            <div className="md:hidden mb-4 flex gap-1 border-b border-gray-200 dark:border-zinc-800">
               <button
-                onClick={() => selectTopic(null)}
-                className={`rounded-full px-3 py-1 text-xs ${selectedTopic === null ? 'bg-gray-900 dark:bg-zinc-200 text-white dark:text-zinc-900' : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400'}`}
+                onClick={() => setMobileView('bookmarks')}
+                className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
+                  mobileView === 'bookmarks'
+                    ? 'border-gray-900 dark:border-white text-gray-900 dark:text-white'
+                    : 'border-transparent text-gray-500 dark:text-zinc-500'
+                }`}
               >
-                All
+                Bookmarks
               </button>
-              {allTopics.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => selectTopic(selectedTopic === t ? null : t)}
-                  className={`rounded-full px-3 py-1 text-xs ${selectedTopic === t ? 'bg-gray-900 dark:bg-zinc-200 text-white dark:text-zinc-900' : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400'}`}
-                >
-                  {t}
-                </button>
-              ))}
+              <button
+                onClick={() => setMobileView('topics')}
+                className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
+                  mobileView === 'topics'
+                    ? 'border-gray-900 dark:border-white text-gray-900 dark:text-white'
+                    : 'border-transparent text-gray-500 dark:text-zinc-500'
+                }`}
+              >
+                Topics
+              </button>
             </div>
           )}
 
-          {bookmarks.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-zinc-500 py-8 text-center">
-              {search || selectedTopic ? 'No bookmarks match your filter.' : 'No bookmarks yet. Add one above!'}
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {bookmarks.map((b) => (
-                <BookmarkCard
-                  key={b.id}
-                  bookmark={b}
-                  onEdit={setEditingBookmark}
-                  onDelete={handleDelete}
-                />
-              ))}
+          {allTopics.length > 0 && mobileView === 'topics' ? (
+            <div className="md:hidden">
+              <TopicFilter
+                topics={allTopics}
+                selected={selectedTopic}
+                onSelect={(t) => {
+                  selectTopic(t);
+                  setMobileView('bookmarks');
+                }}
+              />
             </div>
+          ) : (
+            <>
+              {selectedTopic && (
+                <div className="md:hidden mb-3 flex items-center gap-2 text-xs text-gray-500 dark:text-zinc-500">
+                  Filtering by <span className="font-medium text-gray-900 dark:text-white">{selectedTopic}</span>
+                  <button onClick={() => selectTopic(null)} className="underline">clear</button>
+                </div>
+              )}
+              {bookmarks.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-zinc-500 py-8 text-center">
+                  {search || selectedTopic ? 'No bookmarks match your filter.' : 'No bookmarks yet. Add one above!'}
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {bookmarks.map((b) => (
+                    <BookmarkCard
+                      key={b.id}
+                      bookmark={b}
+                      onEdit={setEditingBookmark}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
