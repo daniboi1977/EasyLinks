@@ -15,9 +15,36 @@ interface Props {
 export default function BookmarkPageClient({ initialBookmarks }: Props) {
   const [bookmarks, setBookmarks] = useState<BookmarkWithTopics[]>(initialBookmarks);
   const [search, setSearch] = useState('');
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  // Read the starting topic from the URL (e.g. if the page was reloaded on a
+  // filtered view) instead of always starting at "All bookmarks".
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return new URLSearchParams(window.location.search).get('topic');
+  });
   const [editingBookmark, setEditingBookmark] = useState<BookmarkWithTopics | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Selecting a topic used to only update React state, so the URL never
+  // changed and the browser never recorded a "back to all topics" step in
+  // its history. Clicking Back would then skip straight past this app to
+  // whatever page was open before it. Pushing a history entry here, and
+  // listening for popstate (the Back button) below, fixes that.
+  const selectTopic = useCallback((topic: string | null) => {
+    setSelectedTopic(topic);
+    const params = new URLSearchParams(window.location.search);
+    if (topic) params.set('topic', topic);
+    else params.delete('topic');
+    const query = params.toString();
+    window.history.pushState({ topic }, '', query ? `?${query}` : window.location.pathname);
+  }, []);
+
+  useEffect(() => {
+    function handlePopState() {
+      setSelectedTopic(new URLSearchParams(window.location.search).get('topic'));
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const fetchBookmarks = useCallback(async (s: string, t: string | null) => {
     const params = new URLSearchParams();
@@ -108,7 +135,7 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
       <div className="flex gap-6 p-4 md:p-6 max-w-7xl mx-auto">
         {/* Sidebar */}
         <div className="hidden md:block">
-          <TopicFilter topics={allTopics} selected={selectedTopic} onSelect={setSelectedTopic} />
+          <TopicFilter topics={allTopics} selected={selectedTopic} onSelect={selectTopic} />
         </div>
 
         {/* Main */}
@@ -117,7 +144,7 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
           {allTopics.length > 0 && (
             <div className="md:hidden mb-4 flex gap-2 flex-wrap">
               <button
-                onClick={() => setSelectedTopic(null)}
+                onClick={() => selectTopic(null)}
                 className={`rounded-full px-3 py-1 text-xs ${selectedTopic === null ? 'bg-gray-900 dark:bg-zinc-200 text-white dark:text-zinc-900' : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400'}`}
               >
                 All
@@ -125,7 +152,7 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
               {allTopics.map((t) => (
                 <button
                   key={t}
-                  onClick={() => setSelectedTopic(selectedTopic === t ? null : t)}
+                  onClick={() => selectTopic(selectedTopic === t ? null : t)}
                   className={`rounded-full px-3 py-1 text-xs ${selectedTopic === t ? 'bg-gray-900 dark:bg-zinc-200 text-white dark:text-zinc-900' : 'bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-zinc-400'}`}
                 >
                   {t}
