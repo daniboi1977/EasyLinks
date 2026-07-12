@@ -141,3 +141,27 @@ bookmark**.
 - This is a small personal project run on free-tier infrastructure
   (Vercel + Supabase), not a company or commercial product — treat it
   accordingly (don't store anything highly sensitive in it).
+
+## About this project
+
+I'm not a professional developer — this is a hobby project I built while
+teaching myself to code, and it's AI-assisted: I design the features and
+decide how everything should work, and I lean on AI tools to help write and
+review the code. I'm upfront about that because I'd rather you know than
+guess.
+
+My goal with EasyLinks (and the other small apps I'm building) is to make
+something that does one job well, rather than a bloated app that tries to do
+everything. If something's confusing, broken, or could just be better, I
+want to hear about it — feedback, bug reports, and feature requests are all
+welcome. Open an issue on this repo, or reach out directly.
+
+### Future plans
+
+Roughly in order of interest, not necessarily priority:
+
+- More AI providers, plus the option to set multiple as fallbacks (if one
+  fails or hits a limit, it tries the next)
+- An iOS version
+- Support for non-Chromium browsers (Firefox, Safari)
+- A paid tier with a higher bookmark limit
