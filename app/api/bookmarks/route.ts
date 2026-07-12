@@ -9,6 +9,20 @@ export async function OPTIONS() {
   return corsOptions();
 }
 
+// Escapes characters that are special inside a PostgREST filter value (`,`, `(`, `)`)
+// and inside an ILIKE pattern (`%`, `_`), so user-typed search text can't change how
+// the query is parsed or match unintended wildcards. Backslash is escaped first so the
+// escapes we add below aren't themselves re-escaped.
+function escapeForPostgrestFilter(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/%/g, '\\%')
+    .replace(/_/g, '\\_')
+    .replace(/,/g, '\\,')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)');
+}
+
 export async function GET(req: NextRequest) {
   const auth = await getAuthedSupabase(req);
   if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
@@ -27,7 +41,8 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false });
 
   if (search) {
-    query = query.or(`title.ilike.%${search}%,summary.ilike.%${search}%`);
+    const escaped = escapeForPostgrestFilter(search);
+    query = query.or(`title.ilike.%${escaped}%,summary.ilike.%${escaped}%`);
   }
 
   const { data, error } = await query;
