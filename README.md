@@ -33,10 +33,11 @@ extension, or an installed Android app.
 
 ## Limits
 
-- **300 bookmarks per account.** This is a hard cap tied to the free-tier
-  database plan the app runs on. If you hit it, delete something old to make
-  room. (There's no paid tier to upgrade to — this is a small personal
-  project, not a commercial product.)
+- **100 bookmarks per account (temporary).** This cap is normally 300, tied to
+  the free-tier database plan the app runs on, but it's been lowered to 100
+  for the time being. If you hit it, delete something old to make room.
+  (There's no paid tier to upgrade to — this is a small personal project, not
+  a commercial product.)
 - **You bring your own AI key.** There is no shared/free AI access baked
   into the app. AI tagging is a bring-your-own-API-key feature — see
   "Setting up AI tagging" below. Without a key, saving still works, just
