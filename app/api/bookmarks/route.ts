@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getAuthedSupabase } from '@/lib/supabase/api';
 import { corsResponse, corsOptions } from '@/lib/cors';
+import { MAX_BOOKMARKS_PER_USER } from '@/lib/limits';
 import type { BookmarkWithTopics } from '@/types';
 
 export async function OPTIONS() {
@@ -8,6 +10,10 @@ export async function OPTIONS() {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await getAuthedSupabase(req);
+  if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
+  const { supabase } = auth;
+
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search')?.trim();
   const topic = searchParams.get('topic')?.trim();
@@ -47,6 +53,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await getAuthedSupabase(req);
+  if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
+  const { supabase, user } = auth;
+
   try {
     const body = await req.json();
     const { url, title, summary, topics } = body as {
@@ -56,14 +66,25 @@ export async function POST(req: NextRequest) {
       topics: string[];
     };
 
+    const { count, error: countErr } = await supabase
+      .from('bookmarks')
+      .select('id', { count: 'exact', head: true });
+    if (countErr) return corsResponse({ error: countErr.message }, { status: 500 });
+    if ((count ?? 0) >= MAX_BOOKMARKS_PER_USER) {
+      return corsResponse(
+        { error: `Free accounts are limited to ${MAX_BOOKMARKS_PER_USER} bookmarks.` },
+        { status: 403 },
+      );
+    }
+
     const { data: bookmark, error: bErr } = await supabase
       .from('bookmarks')
-      .insert({ url, title, summary })
+      .insert({ url, title, summary, user_id: user.id })
       .select()
       .single();
     if (bErr) return corsResponse({ error: bErr.message }, { status: 500 });
 
-    const topicIds = await upsertTopics(topics);
+    const topicIds = await upsertTopics(supabase, user.id, topics);
 
     if (topicIds.length > 0) {
       const joinRows = topicIds.map((topic_id) => ({ bookmark_id: bookmark.id, topic_id }));
@@ -78,14 +99,21 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function upsertTopics(names: string[]): Promise<string[]> {
+export async function upsertTopics(
+  supabase: SupabaseClient,
+  userId: string,
+  names: string[],
+): Promise<string[]> {
   if (names.length === 0) return [];
 
   const normalized = names.map((n) => n.trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()));
 
   const { data, error } = await supabase
     .from('topics')
-    .upsert(normalized.map((name) => ({ name })), { onConflict: 'name' })
+    .upsert(
+      normalized.map((name) => ({ name, user_id: userId })),
+      { onConflict: 'user_id,name' },
+    )
     .select('id, name');
 
   if (error) throw error;

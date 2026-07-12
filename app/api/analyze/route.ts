@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchContent, FetchBlockedError } from '@/lib/fetcher';
 import { analyzeContent, analyzeFile } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
+import { getAuthedSupabase } from '@/lib/supabase/api';
 import { corsResponse, corsOptions } from '@/lib/cors';
 
 export const maxDuration = 60;
@@ -11,6 +12,9 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await getAuthedSupabase(req);
+  if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const ct = req.headers.get('content-type') ?? '';
 

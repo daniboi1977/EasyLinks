@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import type { BookmarkWithTopics } from '@/types';
 import BookmarkPageClient from './BookmarkPageClient';
 
 async function getInitialBookmarks(): Promise<BookmarkWithTopics[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('bookmarks')
     .select(`
@@ -30,6 +31,8 @@ async function getInitialBookmarks(): Promise<BookmarkWithTopics[]> {
 }
 
 export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const initialBookmarks = await getInitialBookmarks();
-  return <BookmarkPageClient initialBookmarks={initialBookmarks} />;
+  return <BookmarkPageClient initialBookmarks={initialBookmarks} userEmail={user?.email ?? ''} />;
 }

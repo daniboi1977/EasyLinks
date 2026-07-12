@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { BookmarkWithTopics } from '@/types';
+import { createClient } from '@/lib/supabase/client';
 import BookmarkCard from './components/BookmarkCard';
 import BookmarkForm from './components/BookmarkForm';
 import TopicFilter from './components/TopicFilter';
@@ -9,9 +11,11 @@ import SearchBar from './components/SearchBar';
 
 interface Props {
   initialBookmarks: BookmarkWithTopics[];
+  userEmail: string;
 }
 
-export default function BookmarkPageClient({ initialBookmarks }: Props) {
+export default function BookmarkPageClient({ initialBookmarks, userEmail }: Props) {
+  const router = useRouter();
   const [bookmarks, setBookmarks] = useState<BookmarkWithTopics[]>(initialBookmarks);
   const [search, setSearch] = useState('');
   // Read the starting topic from the URL (e.g. if the page was reloaded on a
@@ -109,6 +113,13 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
     }
   }
 
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  }
+
   const showModal = showAddForm || editingBookmark !== null;
 
   return (
@@ -125,6 +136,15 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
         >
           + Add
         </button>
+        <div className="hidden shrink-0 items-center gap-2 md:flex">
+          <span className="text-xs text-gray-500 dark:text-zinc-500">{userEmail}</span>
+          <button
+            onClick={handleSignOut}
+            className="rounded px-2 py-1 text-xs text-gray-500 underline hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
+            Sign out
+          </button>
+        </div>
       </header>
 
       {/* Body */}
