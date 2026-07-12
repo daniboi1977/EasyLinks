@@ -1,5 +1,6 @@
 'use client';
 
+import { isHttpUrl } from '@/lib/url';
 import type { BookmarkWithTopics } from '@/types';
 
 interface Props {
@@ -18,14 +19,23 @@ export default function BookmarkCard({ bookmark, onEdit, onDelete }: Props) {
   return (
     <div className="rounded-lg border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
-        <a
-          href={bookmark.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-base font-semibold text-blue-600 dark:text-zinc-100 hover:underline dark:hover:text-white line-clamp-2"
-        >
-          {bookmark.title ?? bookmark.url}
-        </a>
+        {isHttpUrl(bookmark.url) ? (
+          <a
+            href={bookmark.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-base font-semibold text-blue-600 dark:text-zinc-100 hover:underline dark:hover:text-white line-clamp-2"
+          >
+            {bookmark.title ?? bookmark.url}
+          </a>
+        ) : (
+          <span
+            title="This bookmark's URL is not a valid http/https link, so it can't be opened."
+            className="text-base font-semibold text-gray-400 dark:text-zinc-500 line-clamp-2"
+          >
+            {bookmark.title ?? bookmark.url}
+          </span>
+        )}
       </div>
 
       {bookmark.summary && (

@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getAuthedSupabase } from '@/lib/supabase/api';
 import { corsResponse, corsOptions } from '@/lib/cors';
 import { MAX_BOOKMARKS_PER_USER } from '@/lib/limits';
+import { isHttpUrl } from '@/lib/url';
 import type { BookmarkWithTopics } from '@/types';
 
 export async function OPTIONS() {
@@ -80,6 +81,10 @@ export async function POST(req: NextRequest) {
       summary: string;
       topics: string[];
     };
+
+    if (!isHttpUrl(url)) {
+      return corsResponse({ error: 'URL must start with http:// or https://' }, { status: 400 });
+    }
 
     const { count, error: countErr } = await supabase
       .from('bookmarks')
