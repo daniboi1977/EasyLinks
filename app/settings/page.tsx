@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { applyTheme, getStoredTheme, type Theme } from '@/app/lib/theme';
 import type { AiProvider } from '@/types';
 
 const PROVIDER_LABELS: Record<AiProvider, string> = {
@@ -20,6 +21,16 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [theme, setTheme] = useState<Theme>('dark');
+
+  useEffect(() => {
+    setTheme(getStoredTheme());
+  }, []);
+
+  function handleThemeChange(next: Theme) {
+    setTheme(next);
+    applyTheme(next);
+  }
 
   useEffect(() => {
     fetch('/api/settings/ai-key')
@@ -97,6 +108,34 @@ export default function SettingsPage() {
           Back to bookmarks
         </Link>
       </div>
+
+      <section className="mb-6 rounded-lg border border-gray-200 p-4 dark:border-zinc-700">
+        <h2 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Appearance</h2>
+        <p className="mb-4 text-xs text-gray-500 dark:text-zinc-500">
+          Choose how Bookmarks looks. This is saved on this device.
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+            {theme === 'dark' ? 'Dark mode' : 'Light mode'}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={theme === 'dark'}
+            aria-label="Toggle dark mode"
+            onClick={() => handleThemeChange(theme === 'dark' ? 'light' : 'dark')}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+              theme === 'dark' ? 'bg-blue-600 dark:bg-zinc-200' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform dark:bg-zinc-900 ${
+                theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+      </section>
 
       <section className="rounded-lg border border-gray-200 p-4 dark:border-zinc-700">
         <h2 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">AI key</h2>

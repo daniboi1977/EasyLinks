@@ -18,6 +18,19 @@ export const metadata: Metadata = {
   description: "Personal bookmark manager with AI tagging",
 };
 
+// Runs before paint so the correct theme class is set immediately (no flash
+// of the wrong theme while React hydrates). Defaults to dark to match the
+// app's original always-dark look for anyone who hasn't chosen yet.
+const themeInitScript = `
+  (function () {
+    try {
+      var theme = localStorage.getItem('theme');
+      if (theme !== 'light' && theme !== 'dark') theme = 'dark';
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    } catch (e) {}
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,8 +39,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <RegisterSW />
         {children}

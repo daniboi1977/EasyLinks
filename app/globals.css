@@ -3,6 +3,11 @@
 @variant dark (&:where(.dark, .dark *));
 
 :root {
+  --background: #ffffff;
+  --foreground: #18181b;
+}
+
+.dark {
   --background: #000000;
   --foreground: #f4f4f5;
 }
