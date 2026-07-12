@@ -126,21 +126,24 @@ export default function BookmarkPageClient({ initialBookmarks, userEmail }: Prop
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
-      <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between gap-4">
+      <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-3 flex flex-wrap items-center justify-between gap-4 md:flex-nowrap">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white shrink-0">Bookmarks</h1>
-        <div className="flex-1 max-w-lg">
+        {/* On mobile the search bar is given w-full so it always wraps onto
+            its own row below the title/add/settings row; on desktop it sits
+            inline between them like before. */}
+        <div className="order-4 w-full md:order-none md:w-auto md:flex-1 md:max-w-lg">
           <SearchBar value={search} onChange={setSearch} />
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="shrink-0 rounded bg-blue-600 dark:bg-zinc-200 px-4 py-2 text-sm font-medium text-white dark:text-zinc-900 hover:bg-blue-700 dark:hover:bg-zinc-100"
+          className="order-2 shrink-0 rounded bg-blue-600 dark:bg-zinc-200 px-4 py-2 text-sm font-medium text-white dark:text-zinc-900 hover:bg-blue-700 dark:hover:bg-zinc-100 md:order-none"
         >
           + Add
         </button>
         {/* Narrow-screen version: same links as below, shown as compact icons
             instead of the labeled text (there isn't room for both on a phone
             header, and this is what the installed Android app displays). */}
-        <div className="flex shrink-0 items-center gap-1 md:hidden">
+        <div className="order-3 flex shrink-0 items-center gap-1 md:hidden">
           <Link
             href="/settings"
             aria-label="Settings"
