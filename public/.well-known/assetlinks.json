@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.danclark.bookmarks",
+      "sha256_cert_fingerprints": [
+        "DE:CF:78:6A:37:E5:A0:32:82:AC:50:7B:0D:27:DA:16:70:82:75:60:A1:3A:DE:E7:88:AC:73:BB:29:C0:29:20"
+      ]
+    }
+  }
+]

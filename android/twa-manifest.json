@@ -1,0 +1,55 @@
+{
+  "packageId": "com.danclark.bookmarks",
+  "host": "bookmarks-daniclark.vercel.app",
+  "name": "Bookmarks",
+  "launcherName": "Bookmarks",
+  "display": "standalone",
+  "themeColor": "#18181B",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#18181B",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://bookmarks-daniclark.vercel.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "C:\\Users\\dancl\\Claude\\BookmarkApp\\android\\android.keystore",
+    "alias": "bookmarks"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://bookmarks-daniclark.vercel.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://bookmarks-daniclark.vercel.app/",
+  "minSdkVersion": 21,
+  "shareTarget": {
+    "action": "https://bookmarks-daniclark.vercel.app/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1"
+}
