@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
 import { Readability } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
+import { safeFetch } from './ssrf';
 
 // Internal only — used to pick a fetch strategy and tweak the Gemini prompt.
 // Not persisted or exposed via the API.
@@ -121,7 +122,7 @@ export async function fetchContent(url: string): Promise<{ text: string; content
   }
 
   if (GITHUB_RE.test(url)) {
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BookmarkBot/1.0)' },
     });
     if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
@@ -136,7 +137,7 @@ export async function fetchContent(url: string): Promise<{ text: string; content
   const hostname = getHostname(url);
 
   if (SOCIAL_HOSTS.has(hostname)) {
-    const res = await fetch(url, {
+    const res = await safeFetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BookmarkBot/1.0)' },
     }).catch(() => null);
 
@@ -161,7 +162,7 @@ export async function fetchContent(url: string): Promise<{ text: string; content
   }
 
   // Article / general web page
-  const res = await fetch(url, {
+  const res = await safeFetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BookmarkBot/1.0)' },
   });
 
