@@ -137,6 +137,26 @@ export default function BookmarkPageClient({ initialBookmarks, userEmail }: Prop
         >
           + Add
         </button>
+        {/* Narrow-screen version: same links as below, shown as compact icons
+            instead of the labeled text (there isn't room for both on a phone
+            header, and this is what the installed Android app displays). */}
+        <div className="flex shrink-0 items-center gap-1 md:hidden">
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            className="rounded p-2 text-lg text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
+            ⚙
+          </Link>
+          <button
+            onClick={handleSignOut}
+            aria-label="Sign out"
+            className="rounded p-2 text-lg text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
+            ⏻
+          </button>
+        </div>
+
         <div className="hidden shrink-0 items-center gap-2 md:flex">
           <span className="text-xs text-gray-500 dark:text-zinc-500">{userEmail}</span>
           <Link
