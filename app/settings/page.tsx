@@ -112,7 +112,7 @@ export default function SettingsPage() {
       <section className="mb-6 rounded-lg border border-gray-200 p-4 dark:border-zinc-700">
         <h2 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Appearance</h2>
         <p className="mb-4 text-xs text-gray-500 dark:text-zinc-500">
-          Choose how Bookmarks looks. This is saved on this device.
+          Choose how EasyLinks looks. This is saved on this device.
         </p>
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">

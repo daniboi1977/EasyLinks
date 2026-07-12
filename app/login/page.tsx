@@ -34,7 +34,7 @@ function LoginForm() {
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center p-6">
       <h1 className="mb-6 text-lg font-semibold text-gray-900 dark:text-zinc-100">
-        Log in to Bookmarks
+        Log in to EasyLinks
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input

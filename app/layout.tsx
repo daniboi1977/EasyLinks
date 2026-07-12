@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bookmarks",
+  title: "EasyLinks",
   description: "Personal bookmark manager with AI tagging",
 };
 

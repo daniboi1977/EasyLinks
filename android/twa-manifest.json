@@ -1,8 +1,8 @@
 {
   "packageId": "com.danclark.bookmarks",
   "host": "bookmarks-featherlight.vercel.app",
-  "name": "Bookmarks",
-  "launcherName": "Bookmarks",
+  "name": "EasyLinks",
+  "launcherName": "EasyLinks",
   "display": "standalone",
   "themeColor": "#3F3F46",
   "themeColorDark": "#3F3F46",

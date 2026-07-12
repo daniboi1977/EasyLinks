@@ -24,8 +24,8 @@ def twaManifest = [
     applicationId: 'com.danclark.bookmarks',
     hostName: 'bookmarks-featherlight.vercel.app', // The domain being opened in the TWA.
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
-    name: 'Bookmarks', // The application name.
-    launcherName: 'Bookmarks', // The name shown on the Android Launcher.
+    name: 'EasyLinks', // The application name.
+    launcherName: 'EasyLinks', // The name shown on the Android Launcher.
     themeColor: '#3f3f46', // The color used for the status bar.
     themeColorDark: '#3f3f46', // The color used for the dark status bar.
     navigationColor: '#3f3f46', // The color used for the navigation bar.

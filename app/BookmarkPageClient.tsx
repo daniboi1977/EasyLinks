@@ -127,7 +127,7 @@ export default function BookmarkPageClient({ initialBookmarks, userEmail }: Prop
     <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Header */}
       <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-3 flex flex-wrap items-center justify-between gap-4 md:flex-nowrap">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white shrink-0">Bookmarks</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white shrink-0">EasyLinks</h1>
         {/* On mobile the search bar is given w-full so it always wraps onto
             its own row below the title/add/settings row; on desktop it sits
             inline between them like before. */}

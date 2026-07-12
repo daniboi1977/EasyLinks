@@ -1,4 +1,4 @@
-# Bookmarks
+# EasyLinks
 
 A personal bookmark manager. Save a link (or a PDF/image), and AI writes the
 title, a short summary, and a set of topic tags for you automatically. Browse,
@@ -24,7 +24,7 @@ extension, or an installed Android app.
 - **Works without AI, too** — if you haven't set up an AI key (see below),
   you can still save a bookmark and fill in the title/summary/topics by
   hand.
-- **Share sheet on Android** — once installed, "Bookmarks" shows up as a
+- **Share sheet on Android** — once installed, "EasyLinks" shows up as a
   target in Android's native Share menu from any app (browser, Reddit,
   YouTube, etc.), so you can save a link without switching apps.
 - **Light/dark mode** — toggle in Settings; remembered per device.
@@ -94,7 +94,7 @@ browser address bar), and adds it as a Share target in Android.
    then reinstall — Android caches some install info the first time, so a
    stale shortcut can prevent the Share option from showing up.
 4. Once installed, open any app with a link (browser, YouTube, Reddit,
-   etc.), use its **Share** button, and you'll see **Bookmarks** in the
+   etc.), use its **Share** button, and you'll see **EasyLinks** in the
    share sheet. Tapping it pre-fills the URL, ready to save.
 
 ## Installing the Chrome extension

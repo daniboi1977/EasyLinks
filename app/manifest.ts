@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Bookmarks',
-    short_name: 'Bookmarks',
+    name: 'EasyLinks',
+    short_name: 'EasyLinks',
     description: 'Personal bookmark manager with AI tagging',
     start_url: '/',
     display: 'standalone',
