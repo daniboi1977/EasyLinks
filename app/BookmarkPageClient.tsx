@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import type { BookmarkWithTopics } from '@/types';
 import BookmarkCard from './components/BookmarkCard';
 import BookmarkForm from './components/BookmarkForm';
@@ -117,12 +116,6 @@ export default function BookmarkPageClient({ initialBookmarks }: Props) {
       {/* Header */}
       <header className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between gap-4">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white shrink-0">Bookmarks</h1>
-        <nav className="flex gap-4 text-sm font-medium shrink-0">
-          <span className="text-gray-900 dark:text-white">List</span>
-          <Link href="/graph" className="text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white">
-            Graph
-          </Link>
-        </nav>
         <div className="flex-1 max-w-lg">
           <SearchBar value={search} onChange={setSearch} />
         </div>
