@@ -20,13 +20,32 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.trusted.TrustedWebActivityIntent;
 
+import com.google.androidbrowserhelper.trusted.TwaLauncher;
 
 public class LauncherActivity
         extends com.google.androidbrowserhelper.trusted.LauncherActivity {
-    
 
-    
+    // androidbrowserhelper always launches the Trusted Web Activity with
+    // COLOR_SCHEME_SYSTEM, which makes Chrome apply its own automatic
+    // dark-mode darkening to the page whenever the phone is in system dark
+    // mode -- overriding this app's own light/dark toggle. Forcing
+    // COLOR_SCHEME_LIGHT here stops Chrome from doing that, so the page's
+    // own CSS (which already handles both themes) is what actually renders.
+    @Override
+    protected TwaLauncher createTwaLauncher() {
+        return new TwaLauncher(this) {
+            @Override
+            protected TrustedWebActivityIntent onPrepareIntent(TrustedWebActivityIntent intent) {
+                intent.getIntent().putExtra(
+                        CustomTabsIntent.EXTRA_COLOR_SCHEME,
+                        CustomTabsIntent.COLOR_SCHEME_LIGHT);
+                return super.onPrepareIntent(intent);
+            }
+        };
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

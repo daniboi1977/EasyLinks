@@ -26,12 +26,12 @@ def twaManifest = [
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
     name: 'Bookmarks', // The application name.
     launcherName: 'Bookmarks', // The name shown on the Android Launcher.
-    themeColor: '#18181B', // The color used for the status bar.
-    themeColorDark: '#000000', // The color used for the dark status bar.
-    navigationColor: '#000000', // The color used for the navigation bar.
-    navigationColorDark: '#000000', // The color used for the dark navbar.
-    navigationDividerColor: '#000000', // The navbar divider color.
-    navigationDividerColorDark: '#000000', // The dark navbar divider color.
+    themeColor: '#3f3f46', // The color used for the status bar.
+    themeColorDark: '#3f3f46', // The color used for the dark status bar.
+    navigationColor: '#3f3f46', // The color used for the navigation bar.
+    navigationColorDark: '#3f3f46', // The color used for the dark navbar.
+    navigationDividerColor: '#3f3f46', // The navbar divider color.
+    navigationDividerColorDark: '#3f3f46', // The dark navbar divider color.
     backgroundColor: '#18181B', // The color used for the splash screen background.
     enableNotifications: true, // Set to true to enable notification delegation.
     // Every shortcut must include the following fields:
@@ -55,7 +55,7 @@ android {
     namespace "com.danclark.bookmarks"
     defaultConfig {
         applicationId "com.danclark.bookmarks"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 35
         versionCode 1
         versionName "1"
@@ -211,6 +211,6 @@ repositories {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     
-        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
+        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.2'
     
 }
