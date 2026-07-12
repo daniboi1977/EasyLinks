@@ -5,3 +5,4 @@ app/build/
 *.apk.idsig
 *.aab
 local.properties
+*.keystore
