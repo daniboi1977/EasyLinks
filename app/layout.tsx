@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "./components/RegisterSW";
@@ -16,6 +16,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Bookmarks",
   description: "Personal bookmark manager with AI tagging",
+};
+
+// Tells the browser this page manages its own light/dark styling, so
+// Android Chrome's "force dark" doesn't override light mode with a
+// washed-out grey.
+export const viewport: Viewport = {
+  colorScheme: "light dark",
 };
 
 // Runs before paint so the correct theme class is set immediately (no flash
