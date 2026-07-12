@@ -34,8 +34,9 @@ extension, or an installed Android app.
 ## Limits
 
 - **100 bookmarks per account, for testing purposes.** If you hit it, delete
-  something old to make room. (There's no paid tier to upgrade to — this is a
-  small personal project, not a commercial product.)
+  something old to make room. (There's no paid tier to upgrade to at this
+  time). This is a small, personal project, and is not ready for commercial
+  release at this time.
 - **You bring your own AI key.** There is no shared/free AI access baked
   into the app. AI tagging is a bring-your-own-API-key feature — see
   "Setting up AI tagging" below. Without a key, saving still works, just
