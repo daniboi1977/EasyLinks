@@ -8,6 +8,16 @@ import { corsResponse, corsOptions } from '@/lib/cors';
 
 export const maxDuration = 60;
 
+// Must match the "files" bucket's allowed_mime_types / file_size_limit in Supabase
+// (see migration restrict_files_bucket) — checked here too so we reject bad
+// uploads with a clear error before spending time reading/uploading the file.
+const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
+
+// The "files" bucket is private; bookmarks store this URL long-term, so we sign
+// it for years rather than minutes to avoid needing an on-demand re-sign flow.
+const SIGNED_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 365 * 10; // 10 years
+
 export async function OPTIONS() {
   return corsOptions();
 }
@@ -88,6 +98,16 @@ async function handleFileUpload(
 
   const mimeType = file.type;
 
+  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    return corsResponse({ error: 'Unsupported file type', message: `${mimeType || 'unknown'} is not supported.` }, { status: 415 });
+  }
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    return corsResponse(
+      { error: 'File too large', message: `Files must be under ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.` },
+      { status: 413 },
+    );
+  }
+
   const ext = file.name.split('.').pop() ?? 'bin';
   const storagePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const bytes = await file.arrayBuffer();
@@ -100,8 +120,15 @@ async function handleFileUpload(
     return corsResponse({ error: 'Storage upload failed', message: uploadError.message }, { status: 500 });
   }
 
-  const { data: urlData } = supabase.storage.from('files').getPublicUrl(storagePath);
-  const fileUrl = urlData.publicUrl;
+  const { data: urlData, error: signError } = await supabase.storage
+    .from('files')
+    .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS);
+
+  if (signError || !urlData) {
+    return corsResponse({ error: 'Storage signing failed', message: signError?.message }, { status: 500 });
+  }
+
+  const fileUrl = urlData.signedUrl;
 
   const base64 = Buffer.from(bytes).toString('base64');
   const result = await provider.analyzeFile(base64, mimeType, apiKey);
