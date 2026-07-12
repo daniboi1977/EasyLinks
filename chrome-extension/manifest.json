@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Add Bookmark",
+  "name": "Add to EasyLinks",
   "version": "1.0",
   "description": "Save the current page to your bookmark app",
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Add Bookmark",
+    "default_title": "Add to EasyLinks",
     "default_icon": {
       "16": "icons/icon-16.png",
       "48": "icons/icon-48.png",
