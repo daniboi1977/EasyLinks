@@ -4,10 +4,11 @@ import { getAuthedSupabase } from '@/lib/supabase/api';
 import { corsResponse, corsOptions } from '@/lib/cors';
 import { MAX_BOOKMARKS_PER_USER } from '@/lib/limits';
 import { isHttpUrl } from '@/lib/url';
+import { mapBookmarkRow } from '@/lib/bookmarks';
 import type { BookmarkWithTopics } from '@/types';
 
-export async function OPTIONS() {
-  return corsOptions();
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
 }
 
 // Escapes characters that are special inside a PostgREST filter value (`,`, `(`, `)`)
@@ -26,7 +27,7 @@ function escapeForPostgrestFilter(value: string): string {
 
 export async function GET(req: NextRequest) {
   const auth = await getAuthedSupabase(req);
-  if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
+  if (!auth) return corsResponse(req, { error: 'Unauthorized' }, { status: 401 });
   const { supabase } = auth;
 
   const { searchParams } = new URL(req.url);
@@ -49,17 +50,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const bookmarks: BookmarkWithTopics[] = (data ?? []).map((row: any) => ({
-    id: row.id,
-    url: row.url,
-    title: row.title,
-    summary: row.summary,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    topics: (row.bookmark_topics ?? [])
-      .map((bt: any) => bt.topics?.name)
-      .filter(Boolean) as string[],
-  }));
+  const bookmarks: BookmarkWithTopics[] = (data ?? []).map(mapBookmarkRow);
 
   const filtered = topic
     ? bookmarks.filter((b) => b.topics.some((t) => t.toLowerCase() === topic.toLowerCase()))
@@ -70,7 +61,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const auth = await getAuthedSupabase(req);
-  if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
+  if (!auth) return corsResponse(req, { error: 'Unauthorized' }, { status: 401 });
   const { supabase, user } = auth;
 
   try {
@@ -83,15 +74,15 @@ export async function POST(req: NextRequest) {
     };
 
     if (!isHttpUrl(url)) {
-      return corsResponse({ error: 'URL must start with http:// or https://' }, { status: 400 });
+      return corsResponse(req, { error: 'URL must start with http:// or https://' }, { status: 400 });
     }
 
     const { count, error: countErr } = await supabase
       .from('bookmarks')
       .select('id', { count: 'exact', head: true });
-    if (countErr) return corsResponse({ error: countErr.message }, { status: 500 });
+    if (countErr) return corsResponse(req, { error: countErr.message }, { status: 500 });
     if ((count ?? 0) >= MAX_BOOKMARKS_PER_USER) {
-      return corsResponse(
+      return corsResponse(req,
         { error: `Free accounts are limited to ${MAX_BOOKMARKS_PER_USER} bookmarks.` },
         { status: 403 },
       );
@@ -102,20 +93,20 @@ export async function POST(req: NextRequest) {
       .insert({ url, title, summary, user_id: user.id })
       .select()
       .single();
-    if (bErr) return corsResponse({ error: bErr.message }, { status: 500 });
+    if (bErr) return corsResponse(req, { error: bErr.message }, { status: 500 });
 
     const topicIds = await upsertTopics(supabase, user.id, topics);
 
     if (topicIds.length > 0) {
       const joinRows = topicIds.map((topic_id) => ({ bookmark_id: bookmark.id, topic_id }));
       const { error: jErr } = await supabase.from('bookmark_topics').insert(joinRows);
-      if (jErr) return corsResponse({ error: jErr.message }, { status: 500 });
+      if (jErr) return corsResponse(req, { error: jErr.message }, { status: 500 });
     }
 
-    return corsResponse({ ...bookmark, topics }, { status: 201 });
+    return corsResponse(req, { ...bookmark, topics }, { status: 201 });
   } catch (err) {
     console.error('[POST /bookmarks]', err);
-    return corsResponse({ error: String(err) }, { status: 500 });
+    return corsResponse(req, { error: 'Something went wrong saving this bookmark. Please try again.' }, { status: 500 });
   }
 }
 
@@ -139,8 +130,9 @@ export async function upsertTopics(
   if (error) throw error;
 
   // Return IDs in the same order as input
+  const rows = (data ?? []) as { id: string; name: string }[];
   return normalized.map((name) => {
-    const match = (data ?? []).find((t: any) => t.name === name);
+    const match = rows.find((t) => t.name === name);
     return match?.id;
   }).filter(Boolean) as string[];
 }

@@ -5,8 +5,15 @@ import { getProvider, type AiProvider } from '@/lib/ai';
 import { supabase } from '@/lib/supabase';
 import { getAuthedSupabase } from '@/lib/supabase/api';
 import { corsResponse, corsOptions } from '@/lib/cors';
+import { isRateLimited } from '@/lib/rateLimit';
 
 export const maxDuration = 60;
+
+// Covers both the JSON-body and file-upload paths through this route — the
+// latter has no other cost brake, unlike the AI call itself (billed to the
+// user's own key).
+const RATE_LIMIT = 20;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 // Must match the "files" bucket's allowed_mime_types / file_size_limit in Supabase
 // (see migration restrict_files_bucket) — checked here too so we reject bad
@@ -18,8 +25,8 @@ const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
 // it for years rather than minutes to avoid needing an on-demand re-sign flow.
 const SIGNED_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 365 * 10; // 10 years
 
-export async function OPTIONS() {
-  return corsOptions();
+export async function OPTIONS(req: NextRequest) {
+  return corsOptions(req);
 }
 
 // Looks up the calling user's configured provider + decrypted API key via the
@@ -36,11 +43,15 @@ async function getUserAiKey(supabase: SupabaseClient): Promise<{ provider: AiPro
 
 export async function POST(req: NextRequest) {
   const auth = await getAuthedSupabase(req);
-  if (!auth) return corsResponse({ error: 'Unauthorized' }, { status: 401 });
+  if (!auth) return corsResponse(req, { error: 'Unauthorized' }, { status: 401 });
+
+  if (isRateLimited(auth.user.id, RATE_LIMIT, RATE_LIMIT_WINDOW_MS)) {
+    return corsResponse(req, { error: 'rate_limited', message: 'Too many requests. Please slow down.' }, { status: 429 });
+  }
 
   const aiKey = await getUserAiKey(auth.supabase);
   if (!aiKey) {
-    return corsResponse(
+    return corsResponse(req,
       { error: 'no_ai_key', message: 'Add your own AI key in Settings to use AI tagging.' },
       { status: 403 },
     );
@@ -69,19 +80,19 @@ export async function POST(req: NextRequest) {
         isYouTube = fetched.contentType === 'youtube';
       } catch (err) {
         if (err instanceof FetchBlockedError) {
-          return corsResponse({ error: 'blocked', message: err.message }, { status: 422 });
+          return corsResponse(req, { error: 'blocked', message: err.message }, { status: 422 });
         }
         throw err;
       }
     } else {
-      return corsResponse({ error: 'url or pastedText required' }, { status: 400 });
+      return corsResponse(req, { error: 'url or pastedText required' }, { status: 400 });
     }
 
     const result = await provider.analyzeContent(text, isYouTube, aiKey.apiKey);
-    return corsResponse(result);
+    return corsResponse(req, result);
   } catch (err) {
     console.error('[analyze]', err);
-    return corsResponse({ error: 'Analysis failed', message: String(err) }, { status: 500 });
+    return corsResponse(req, { error: 'Analysis failed', message: 'Something went wrong analyzing this content. Please try again.' }, { status: 500 });
   }
 }
 
@@ -93,16 +104,16 @@ async function handleFileUpload(
   const formData = await req.formData();
   const file = formData.get('file') as File | null;
   if (!file) {
-    return corsResponse({ error: 'No file provided' }, { status: 400 });
+    return corsResponse(req, { error: 'No file provided' }, { status: 400 });
   }
 
   const mimeType = file.type;
 
   if (!ALLOWED_MIME_TYPES.has(mimeType)) {
-    return corsResponse({ error: 'Unsupported file type', message: `${mimeType || 'unknown'} is not supported.` }, { status: 415 });
+    return corsResponse(req, { error: 'Unsupported file type', message: `${mimeType || 'unknown'} is not supported.` }, { status: 415 });
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    return corsResponse(
+    return corsResponse(req,
       { error: 'File too large', message: `Files must be under ${MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB.` },
       { status: 413 },
     );
@@ -117,7 +128,7 @@ async function handleFileUpload(
     .upload(storagePath, bytes, { contentType: mimeType });
 
   if (uploadError) {
-    return corsResponse({ error: 'Storage upload failed', message: uploadError.message }, { status: 500 });
+    return corsResponse(req, { error: 'Storage upload failed', message: uploadError.message }, { status: 500 });
   }
 
   const { data: urlData, error: signError } = await supabase.storage
@@ -125,7 +136,7 @@ async function handleFileUpload(
     .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS);
 
   if (signError || !urlData) {
-    return corsResponse({ error: 'Storage signing failed', message: signError?.message }, { status: 500 });
+    return corsResponse(req, { error: 'Storage signing failed', message: signError?.message }, { status: 500 });
   }
 
   const fileUrl = urlData.signedUrl;
@@ -133,5 +144,5 @@ async function handleFileUpload(
   const base64 = Buffer.from(bytes).toString('base64');
   const result = await provider.analyzeFile(base64, mimeType, apiKey);
 
-  return corsResponse({ ...result, fileUrl });
+  return corsResponse(req, { ...result, fileUrl });
 }

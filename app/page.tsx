@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { mapBookmarkRow } from '@/lib/bookmarks';
 import type { BookmarkWithTopics } from '@/types';
 import BookmarkPageClient from './BookmarkPageClient';
 
@@ -17,17 +18,7 @@ async function getInitialBookmarks(): Promise<BookmarkWithTopics[]> {
     return [];
   }
 
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    url: row.url,
-    title: row.title,
-    summary: row.summary,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    topics: (row.bookmark_topics ?? [])
-      .map((bt: any) => bt.topics?.name)
-      .filter(Boolean) as string[],
-  }));
+  return (data ?? []).map(mapBookmarkRow);
 }
 
 export default async function Home() {

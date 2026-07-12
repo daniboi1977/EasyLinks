@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthedSupabase } from '@/lib/supabase/api';
 import { upsertTopics } from '../route';
-import type { BookmarkWithTopics } from '@/types';
+import { mapBookmarkRow } from '@/lib/bookmarks';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthedSupabase(req);
@@ -17,11 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
 
-  const bookmark: BookmarkWithTopics = {
-    ...data,
-    topics: (data.bookmark_topics ?? []).map((bt: any) => bt.topics?.name).filter(Boolean),
-  };
-  return NextResponse.json(bookmark);
+  return NextResponse.json(mapBookmarkRow(data));
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -56,7 +52,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[PATCH /bookmarks/[id]]', err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: 'Something went wrong updating this bookmark. Please try again.' }, { status: 500 });
   }
 }
 
