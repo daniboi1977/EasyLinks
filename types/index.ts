@@ -21,3 +21,5 @@ export interface AnalyzeResult {
   summary: string;
   topics: string[];
 }
+
+export type AiProvider = 'gemini' | 'anthropic' | 'openai';

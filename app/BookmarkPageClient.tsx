@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { BookmarkWithTopics } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import BookmarkCard from './components/BookmarkCard';
@@ -138,6 +139,12 @@ export default function BookmarkPageClient({ initialBookmarks, userEmail }: Prop
         </button>
         <div className="hidden shrink-0 items-center gap-2 md:flex">
           <span className="text-xs text-gray-500 dark:text-zinc-500">{userEmail}</span>
+          <Link
+            href="/settings"
+            className="rounded px-2 py-1 text-xs text-gray-500 underline hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
+            Settings
+          </Link>
           <button
             onClick={handleSignOut}
             className="rounded px-2 py-1 text-xs text-gray-500 underline hover:text-gray-900 dark:text-zinc-500 dark:hover:text-zinc-100"

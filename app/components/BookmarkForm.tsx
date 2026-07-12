@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { BookmarkWithTopics, AnalyzeResult } from '@/types';
 
 interface Props {
@@ -28,6 +29,7 @@ export default function BookmarkForm({ initialValues, onSubmit, onCancel }: Prop
   const [topicsStr, setTopicsStr] = useState((initialValues?.topics ?? []).join(', '));
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState('');
+  const [noAiKey, setNoAiKey] = useState(false);
   const [showPasteArea, setShowPasteArea] = useState(false);
   const [pastedText, setPastedText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -35,6 +37,7 @@ export default function BookmarkForm({ initialValues, onSubmit, onCancel }: Prop
   async function handleAnalyze() {
     setAnalyzing(true);
     setAnalyzeError('');
+    setNoAiKey(false);
     try {
       let res: Response;
 
@@ -60,6 +63,11 @@ export default function BookmarkForm({ initialValues, onSubmit, onCancel }: Prop
       if (data.error === 'blocked') {
         setShowPasteArea(true);
         setAnalyzeError('This platform blocks automated fetches. Paste the post text below and click Analyze again.');
+        return;
+      }
+
+      if (data.error === 'no_ai_key') {
+        setNoAiKey(true);
         return;
       }
 
@@ -183,6 +191,15 @@ export default function BookmarkForm({ initialValues, onSubmit, onCancel }: Prop
           )}
 
           {analyzeError && <p className="text-xs text-red-600">{analyzeError}</p>}
+          {noAiKey && (
+            <p className="text-xs text-amber-600">
+              Add your own AI key in{' '}
+              <Link href="/settings" className="underline">
+                Settings
+              </Link>{' '}
+              to use AI tagging, or fill in the title/summary/topics below by hand.
+            </p>
+          )}
         </>
       )}
 
