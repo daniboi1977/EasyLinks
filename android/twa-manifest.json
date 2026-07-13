@@ -1,6 +1,6 @@
 {
   "packageId": "com.danclark.bookmarks",
-  "host": "bookmarks-featherlight.vercel.app",
+  "host": "easylinks-featherlight.vercel.app",
   "name": "EasyLinks",
   "launcherName": "EasyLinks",
   "display": "standalone",
@@ -13,7 +13,7 @@
   "backgroundColor": "#18181B",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://bookmarks-featherlight.vercel.app/icon-512.png",
+  "iconUrl": "https://easylinks-featherlight.vercel.app/icon-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "C:\\Users\\dancl\\Claude\\BookmarkApp\\android\\android-release.keystore",
@@ -23,7 +23,7 @@
   "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://bookmarks-featherlight.vercel.app/manifest.webmanifest",
+  "webManifestUrl": "https://easylinks-featherlight.vercel.app/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": {
@@ -32,10 +32,10 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://bookmarks-featherlight.vercel.app/",
+  "fullScopeUrl": "https://easylinks-featherlight.vercel.app/",
   "minSdkVersion": 23,
   "shareTarget": {
-    "action": "https://bookmarks-featherlight.vercel.app/share",
+    "action": "https://easylinks-featherlight.vercel.app/share",
     "method": "GET",
     "params": {
       "title": "title",

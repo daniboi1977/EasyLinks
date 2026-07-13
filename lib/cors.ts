@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // install; any chrome-extension:// origin is trusted since only Dan's own
 // browser has it installed and every request still requires a valid auth token.
 const ALLOWED_ORIGINS = [
-  'https://bookmarks-featherlight.vercel.app',
+  'https://easylinks-featherlight.vercel.app',
   'http://localhost:3000',
 ];
 

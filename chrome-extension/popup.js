@@ -1,4 +1,4 @@
-const APP_URL = 'https://bookmarks-featherlight.vercel.app';
+const APP_URL = 'https://easylinks-featherlight.vercel.app';
 const SUPABASE_URL = 'https://htvjyecdydcdkzzmflpk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_0hJs3zPsZ_Jqe9v5pNiGNw_GC4vCBMz';
 

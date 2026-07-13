@@ -5,7 +5,7 @@ title, a short summary, and a set of topic tags for you automatically. Browse,
 search, and filter everything you've saved from the web app, a Chrome
 extension, or an installed Android app.
 
-**Live app:** https://bookmarks-featherlight.vercel.app
+**Live app:** https://easylinks-featherlight.vercel.app
 
 ---
 
@@ -59,7 +59,7 @@ extension, or an installed Android app.
 
 ## Getting an account
 
-1. Go to https://bookmarks-featherlight.vercel.app
+1. Go to https://easylinks-featherlight.vercel.app
 2. Click **Sign up**, enter an email and password.
 3. Check your email for a confirmation link and click it.
 4. Log in.
@@ -87,7 +87,7 @@ back off.
 This turns the site into a full-screen app icon on your home screen (no
 browser address bar), and adds it as a Share target in Android.
 
-1. Open https://bookmarks-featherlight.vercel.app in Chrome on your Android
+1. Open https://easylinks-featherlight.vercel.app in Chrome on your Android
    phone and log in.
 2. Tap the **⋮** menu → **Add to Home screen** / **Install app**.
 3. If you'd previously added a shortcut for this site, uninstall it first,

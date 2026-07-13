@@ -22,7 +22,7 @@ plugins {
 
 def twaManifest = [
     applicationId: 'com.danclark.bookmarks',
-    hostName: 'bookmarks-featherlight.vercel.app', // The domain being opened in the TWA.
+    hostName: 'easylinks-featherlight.vercel.app', // The domain being opened in the TWA.
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
     name: 'EasyLinks', // The application name.
     launcherName: 'EasyLinks', // The name shown on the Android Launcher.
@@ -76,17 +76,17 @@ android {
             // The URL the Web Manifest for the Progressive Web App that the TWA points to. This
             // is used by Chrome OS and Meta Quest to open the Web version of the PWA instead of
             // the TWA, as it will probably give a better user experience for non-mobile devices.
-            resValue "string", "webManifestUrl", 'https://bookmarks-featherlight.vercel.app/manifest.webmanifest'
+            resValue "string", "webManifestUrl", 'https://easylinks-featherlight.vercel.app/manifest.webmanifest'
         
 
         
             // This is used by Meta Quest.
-            resValue "string", "fullScopeUrl", 'https://bookmarks-featherlight.vercel.app/'
+            resValue "string", "fullScopeUrl", 'https://easylinks-featherlight.vercel.app/'
         
 
         
             // The data for the app to support web share target.
-            resValue "string", "shareTarget", '{\\"action\\":\\"https://bookmarks-featherlight.vercel.app/share\\",\\"method\\":\\"GET\\",\\"params\\":{\\"title\\":\\"title\\",\\"text\\":\\"text\\",\\"url\\":\\"url\\"}}'
+            resValue "string", "shareTarget", '{\\"action\\":\\"https://easylinks-featherlight.vercel.app/share\\",\\"method\\":\\"GET\\",\\"params\\":{\\"title\\":\\"title\\",\\"text\\":\\"text\\",\\"url\\":\\"url\\"}}'
         
 
         // The hostname is used when building the intent-filter, so the TWA is able to
