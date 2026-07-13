@@ -39,7 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.claude/settings.local.json
 
 .vercel
 .env*
+
+# AI tooling / internal docs (kept locally, not published)
+.claude/
+CLAUDE.md
+BOOKMARK_APP_SPEC.md
+CopyStyleRules.md
+Memory.md
