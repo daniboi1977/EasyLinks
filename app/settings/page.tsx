@@ -23,9 +23,82 @@ export default function SettingsPage() {
   const [error, setError] = useState('');
   const [theme, setTheme] = useState<Theme>('dark');
 
+  // Account email state: shows the signed-in user's current email and lets
+  // them request a change. Supabase requires confirming the change via a
+  // link emailed to the new address before it actually takes effect.
+  const [currentEmail, setCurrentEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailError, setEmailError] = useState('');
+
+  // Password change state. Unlike the email change, this takes effect
+  // immediately - no confirmation email, since the user is already proving
+  // they're signed in.
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
   useEffect(() => {
     setTheme(getStoredTheme());
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setCurrentEmail(data.user.email);
+    });
+  }, []);
+
+  async function handleEmailChange(e: React.FormEvent) {
+    e.preventDefault();
+    setEmailSaving(true);
+    setEmailError('');
+    setEmailMessage('');
+
+    const supabase = createClient();
+    // This does NOT change the email immediately - Supabase sends a
+    // confirmation link to the new address (and, depending on the "Secure
+    // email change" setting, one to the old address too). The address only
+    // updates once the link is clicked.
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+
+    if (error) {
+      setEmailError(error.message);
+    } else {
+      setEmailMessage(
+        `Confirmation link sent to ${newEmail}. Click it to finish changing your email.`,
+      );
+      setNewEmail('');
+    }
+    setEmailSaving(false);
+  }
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordMessage('');
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+
+    setPasswordSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setPasswordError(error.message);
+    } else {
+      setPasswordMessage('Password updated.');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+    setPasswordSaving(false);
+  }
 
   function handleThemeChange(next: Theme) {
     setTheme(next);
@@ -135,6 +208,85 @@ export default function SettingsPage() {
             />
           </button>
         </div>
+      </section>
+
+      <section className="mb-6 rounded-lg border border-gray-200 p-4 dark:border-zinc-700">
+        <h2 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">Account</h2>
+        <p className="mb-4 text-xs text-gray-500 dark:text-zinc-500">
+          Current email: <span className="text-gray-700 dark:text-zinc-300">{currentEmail}</span>
+        </p>
+
+        <form onSubmit={handleEmailChange} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+              New email address
+            </label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            />
+          </div>
+
+          {emailError && <p className="text-sm text-red-600">{emailError}</p>}
+          {emailMessage && <p className="text-sm text-green-600">{emailMessage}</p>}
+
+          <button
+            type="submit"
+            disabled={emailSaving}
+            className="self-start rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+          >
+            {emailSaving ? 'Sending…' : 'Update email'}
+          </button>
+        </form>
+
+        <hr className="my-4 border-gray-200 dark:border-zinc-700" />
+
+        <form onSubmit={handlePasswordChange} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+              New password
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              required
+              minLength={8}
+              className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+              Confirm new password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter the password above"
+              required
+              minLength={8}
+              className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            />
+          </div>
+
+          {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
+          {passwordMessage && <p className="text-sm text-green-600">{passwordMessage}</p>}
+
+          <button
+            type="submit"
+            disabled={passwordSaving}
+            className="self-start rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+          >
+            {passwordSaving ? 'Saving…' : 'Update password'}
+          </button>
+        </form>
       </section>
 
       <section className="rounded-lg border border-gray-200 p-4 dark:border-zinc-700">
