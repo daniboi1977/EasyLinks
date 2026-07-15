@@ -63,7 +63,10 @@ export default function SettingsPage() {
     // confirmation link to the new address (and, depending on the "Secure
     // email change" setting, one to the old address too). The address only
     // updates once the link is clicked.
-    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    const { error } = await supabase.auth.updateUser(
+      { email: newEmail },
+      { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    );
 
     if (error) {
       setEmailError(error.message);
