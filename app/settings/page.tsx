@@ -136,6 +136,18 @@ export default function SettingsPage() {
     (p) => !keys.some((k) => k.provider === p),
   );
 
+  // Keep the add-form's selected provider valid as `keys` changes (e.g. right
+  // after the initial load, or after adding/removing a key) — without this,
+  // the dropdown can *display* a provider that differs from what handleAddKey
+  // would actually submit, since the <select> only shows a corrected value
+  // rather than updating the underlying state.
+  useEffect(() => {
+    if (availableProviders.length > 0 && !availableProviders.includes(addProvider)) {
+      setAddProvider(availableProviders[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keys]);
+
   async function handleAddKey(e: React.FormEvent) {
     e.preventDefault();
     setAdding(true);
@@ -379,7 +391,7 @@ export default function SettingsPage() {
                     Provider
                   </label>
                   <select
-                    value={availableProviders.includes(addProvider) ? addProvider : availableProviders[0]}
+                    value={addProvider}
                     onChange={(e) => setAddProvider(e.target.value as AiProvider)}
                     className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                   >
