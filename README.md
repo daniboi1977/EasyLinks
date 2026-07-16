@@ -24,6 +24,10 @@ extension, or an installed Android app.
 - **Works without AI, too** — if you haven't set up an AI key (see below),
   you can still save a bookmark and fill in the title/summary/topics by
   hand.
+- **Bring multiple AI providers, with automatic fallback** — save keys for
+  more than one provider, star a favorite, and if it fails (bad key, rate
+  limit, outage) the others are tried automatically. See "Setting up AI
+  tagging" below.
 - **Share sheet on Android** — once installed, "EasyLinks" shows up as a
   target in Android's native Share menu from any app (browser, Reddit,
   YouTube, etc.), so you can save a link without switching apps.
@@ -67,28 +71,41 @@ extension, or an installed Android app.
 
 ## Setting up AI tagging (optional but recommended)
 
-AI tagging needs an API key from one of several supported providers. You
-only need one, and can add more later for automatic fallback if one fails
-or hits a rate limit. Free tiers exist for most of these and are generally
-more than enough for personal bookmark tagging.
+AI tagging needs an API key from at least one supported provider:
 
-1. Get an API key from whichever provider you prefer:
-   - **Google Gemini** — https://aistudio.google.com/apikey
-   - **Anthropic (Claude)** — https://console.anthropic.com/settings/keys
-   - **OpenAI** — https://platform.openai.com/api-keys
-   - **OpenRouter** — https://openrouter.ai/keys
-   - **Groq** — https://console.groq.com/keys
-   - **Mistral** — https://console.mistral.ai/api-keys
-   - **Together AI** — https://api.together.ai/settings/api-keys
-   - **DeepSeek** — https://platform.deepseek.com/api_keys
-   - **Hugging Face** — https://huggingface.co/settings/tokens
+- **Google Gemini** — https://aistudio.google.com/apikey
+- **Anthropic (Claude)** — https://console.anthropic.com/settings/keys
+- **OpenAI** — https://platform.openai.com/api-keys
+- **OpenRouter** — https://openrouter.ai/keys
+- **Groq** — https://console.groq.com/keys
+- **Mistral** — https://console.mistral.ai/api-keys
+- **Together AI** — https://api.together.ai/settings/api-keys
+- **DeepSeek** — https://platform.deepseek.com/api_keys
+- **Hugging Face** — https://huggingface.co/settings/tokens
+
+Free tiers exist for most of these and are generally more than enough for
+personal bookmark tagging.
+
+**How it works:** you can save a key for more than one provider at once.
+Whichever one is starred as your favorite is tried first; if that call
+fails for any reason (bad key, rate limit, provider outage), the app
+automatically retries the other saved keys in order until one succeeds.
+This all happens on a single **Analyze** click — no extra steps needed
+once it's set up.
+
+**To set it up:**
+
+1. Get an API key from one or more providers above.
 2. In the app, go to **Settings** (top right / bottom of the page).
-3. Choose your provider from the dropdown, paste in the key, click **Save**.
+3. Under **AI keys**, choose a provider from the dropdown, paste in the
+   key, and click **Add key**. Your first saved key becomes the favorite
+   automatically.
+4. Repeat for any additional providers you want as fallbacks. Click the
+   star next to a saved key to make it the favorite instead.
 
-Your key is encrypted and stored securely server-side (Supabase Vault) — it
-is never stored in plain text and never shown back to you after saving. You
-can remove it any time from the same Settings page, which turns AI tagging
-back off.
+Keys are encrypted and stored securely server-side (Supabase Vault) — never
+stored in plain text and never shown back to you after saving. Remove one
+any time from the same Settings page.
 
 ## Installing the Android app
 
@@ -166,8 +183,4 @@ welcome. Open an issue on this repo, or reach out directly.
 
 ### Future plans
 
-Roughly in order of interest, not necessarily priority:
-
-- An iOS version
-- Support for non-Chromium browsers (Firefox, Safari)
-- A paid tier with a higher bookmark limit
+See [Issues](https://github.com/daniboi1977/EasyLinks/issues) for what's planned next.
