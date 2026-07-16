@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { fetchContent, FetchBlockedError } from '@/lib/fetcher';
-import { getProvider, type AiProvider } from '@/lib/ai';
+import type { AiProvider } from '@/lib/ai';
+import { withAiFallback, AllProvidersFailedError, type AiKeyRecord } from '@/lib/ai/fallback';
 import { supabase } from '@/lib/supabase';
 import { getAuthedSupabase } from '@/lib/supabase/api';
 import { corsResponse, corsOptions } from '@/lib/cors';
@@ -29,16 +30,19 @@ export async function OPTIONS(req: NextRequest) {
   return corsOptions(req);
 }
 
-// Looks up the calling user's configured provider + decrypted API key via the
-// get_user_ai_key() Postgres function (a SECURITY DEFINER wrapper around
-// Supabase Vault, scoped to auth.uid() — see migration add_ai_key_vault_functions).
-// Returns null if the user hasn't configured a key yet.
-async function getUserAiKey(supabase: SupabaseClient): Promise<{ provider: AiProvider; apiKey: string } | null> {
-  const { data, error } = await supabase.rpc('get_user_ai_key');
+// Looks up all of the calling user's configured provider(s) + decrypted API
+// key(s) via the get_user_ai_keys() Postgres function (a SECURITY DEFINER
+// wrapper around Supabase Vault, scoped to auth.uid() — see migration
+// add_multi_ai_keys). Already ordered favorite-first. Empty array if the user
+// hasn't configured any key yet.
+async function getUserAiKeys(supabase: SupabaseClient): Promise<AiKeyRecord[]> {
+  const { data, error } = await supabase.rpc('get_user_ai_keys');
   if (error) throw error;
-  const row = data?.[0];
-  if (!row) return null;
-  return { provider: row.provider as AiProvider, apiKey: row.api_key as string };
+  return (data ?? []).map((row: { provider: string; api_key: string; is_favorite: boolean }) => ({
+    provider: row.provider as AiProvider,
+    apiKey: row.api_key,
+    isFavorite: row.is_favorite,
+  }));
 }
 
 export async function POST(req: NextRequest) {
@@ -49,20 +53,19 @@ export async function POST(req: NextRequest) {
     return corsResponse(req, { error: 'rate_limited', message: 'Too many requests. Please slow down.' }, { status: 429 });
   }
 
-  const aiKey = await getUserAiKey(auth.supabase);
-  if (!aiKey) {
+  const aiKeys = await getUserAiKeys(auth.supabase);
+  if (aiKeys.length === 0) {
     return corsResponse(req,
       { error: 'no_ai_key', message: 'Add your own AI key in Settings to use AI tagging.' },
       { status: 403 },
     );
   }
-  const provider = getProvider(aiKey.provider);
 
   try {
     const ct = req.headers.get('content-type') ?? '';
 
     if (ct.includes('multipart/form-data')) {
-      return await handleFileUpload(req, provider, aiKey.apiKey);
+      return await handleFileUpload(req, aiKeys);
     }
 
     const body = await req.json();
@@ -88,19 +91,21 @@ export async function POST(req: NextRequest) {
       return corsResponse(req, { error: 'url or pastedText required' }, { status: 400 });
     }
 
-    const result = await provider.analyzeContent(text, isYouTube, aiKey.apiKey);
+    const result = await withAiFallback(aiKeys, (provider, apiKey) =>
+      provider.analyzeContent(text, isYouTube, apiKey),
+    );
     return corsResponse(req, result);
   } catch (err) {
-    console.error('[analyze]', err);
+    if (err instanceof AllProvidersFailedError) {
+      console.error('[analyze] all providers failed', err.attempts);
+    } else {
+      console.error('[analyze]', err);
+    }
     return corsResponse(req, { error: 'Analysis failed', message: 'Something went wrong analyzing this content. Please try again.' }, { status: 500 });
   }
 }
 
-async function handleFileUpload(
-  req: NextRequest,
-  provider: ReturnType<typeof getProvider>,
-  apiKey: string,
-) {
+async function handleFileUpload(req: NextRequest, aiKeys: AiKeyRecord[]) {
   const formData = await req.formData();
   const file = formData.get('file') as File | null;
   if (!file) {
@@ -142,7 +147,9 @@ async function handleFileUpload(
   const fileUrl = urlData.signedUrl;
 
   const base64 = Buffer.from(bytes).toString('base64');
-  const result = await provider.analyzeFile(base64, mimeType, apiKey);
+  const result = await withAiFallback(aiKeys, (provider, apiKey) =>
+    provider.analyzeFile(base64, mimeType, apiKey),
+  );
 
   return corsResponse(req, { ...result, fileUrl });
 }

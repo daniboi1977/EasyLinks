@@ -6,7 +6,7 @@ import * as openai from './openai';
 export type { AiProvider };
 export const AI_PROVIDERS: AiProvider[] = ['gemini', 'anthropic', 'openai'];
 
-interface ProviderModule {
+export interface ProviderModule {
   analyzeContent(content: string, isYouTube: boolean, apiKey: string): Promise<AnalyzeResult>;
   analyzeFile(base64: string, mimeType: string, apiKey: string): Promise<AnalyzeResult>;
 }

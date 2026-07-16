@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { applyTheme, getStoredTheme, type Theme } from '@/app/lib/theme';
+import { AI_PROVIDERS } from '@/lib/ai';
 import type { AiProvider } from '@/types';
 
 const PROVIDER_LABELS: Record<AiProvider, string> = {
@@ -13,14 +14,22 @@ const PROVIDER_LABELS: Record<AiProvider, string> = {
 };
 
 export default function SettingsPage() {
-  const [configured, setConfigured] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState<AiProvider | null>(null);
-  const [provider, setProvider] = useState<AiProvider>('gemini');
-  const [apiKey, setApiKey] = useState('');
+  // Every provider the user has saved a key for, plus which one is the
+  // favorite (tried first, with automatic fallback to the others on failure).
+  const [keys, setKeys] = useState<{ provider: AiProvider; isFavorite: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+
+  // "Add a new key" form state.
+  const [addProvider, setAddProvider] = useState<AiProvider>('gemini');
+  const [addApiKey, setAddApiKey] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [addMessage, setAddMessage] = useState('');
+  const [addError, setAddError] = useState('');
+
+  // State for the favorite-toggle / remove buttons on each saved key row.
+  const [busyProvider, setBusyProvider] = useState<AiProvider | null>(null);
+  const [rowError, setRowError] = useState('');
+
   const [theme, setTheme] = useState<Theme>('dark');
 
   // Account email state: shows the signed-in user's current email and lets
@@ -108,65 +117,84 @@ export default function SettingsPage() {
     applyTheme(next);
   }
 
+  // Re-fetches the saved-keys list from the server. Called after every
+  // add/favorite/remove action instead of guessing the new state locally —
+  // the server (not the client) decides things like which key auto-becomes
+  // the new favorite after a removal, so re-fetching keeps this page correct.
+  async function loadKeys() {
+    const res = await fetch('/api/settings/ai-keys');
+    const data = await res.json();
+    setKeys(data.keys ?? []);
+  }
+
   useEffect(() => {
-    fetch('/api/settings/ai-key')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.configured) {
-          setConfigured(true);
-          setCurrentProvider(data.provider);
-          setProvider(data.provider);
-        }
-      })
-      .finally(() => setLoading(false));
+    loadKeys().finally(() => setLoading(false));
   }, []);
 
-  async function handleSave(e: React.FormEvent) {
+  // Providers the user hasn't already saved a key for — offered in the add form.
+  const availableProviders = AI_PROVIDERS.filter(
+    (p) => !keys.some((k) => k.provider === p),
+  );
+
+  async function handleAddKey(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
-    setError('');
-    setMessage('');
+    setAdding(true);
+    setAddError('');
+    setAddMessage('');
     try {
-      const res = await fetch('/api/settings/ai-key', {
+      const res = await fetch('/api/settings/ai-keys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, apiKey }),
+        body: JSON.stringify({ provider: addProvider, apiKey: addApiKey }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? 'Failed to save key');
+        setAddError(data.error ?? 'Failed to save key');
         return;
       }
-      setConfigured(true);
-      setCurrentProvider(provider);
-      setApiKey('');
-      setMessage('Key saved.');
+      await loadKeys();
+      setAddApiKey('');
+      setAddMessage('Key saved.');
     } catch {
-      setError('Network error while saving key');
+      setAddError('Network error while saving key');
     } finally {
-      setSaving(false);
+      setAdding(false);
     }
   }
 
-  async function handleRemove() {
-    setSaving(true);
-    setError('');
-    setMessage('');
+  async function handleSetFavorite(provider: AiProvider) {
+    setBusyProvider(provider);
+    setRowError('');
     try {
-      const res = await fetch('/api/settings/ai-key', { method: 'DELETE' });
+      const res = await fetch(`/api/settings/ai-keys/${provider}`, { method: 'PATCH' });
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? 'Failed to remove key');
+        setRowError(data.error ?? 'Failed to update favorite');
         return;
       }
-      setConfigured(false);
-      setCurrentProvider(null);
-      setApiKey('');
-      setMessage('Key removed. AI tagging is now disabled until you add a new one.');
+      await loadKeys();
     } catch {
-      setError('Network error while removing key');
+      setRowError('Network error while updating favorite');
     } finally {
-      setSaving(false);
+      setBusyProvider(null);
+    }
+  }
+
+  async function handleRemoveKey(provider: AiProvider) {
+    setBusyProvider(provider);
+    setRowError('');
+    try {
+      const res = await fetch(`/api/settings/ai-keys/${provider}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        setRowError(data.error ?? 'Failed to remove key');
+        return;
+      }
+      await loadKeys();
+    } catch {
+      setRowError('Network error while removing key');
+    } finally {
+      setBusyProvider(null);
     }
   }
 
@@ -293,77 +321,106 @@ export default function SettingsPage() {
       </section>
 
       <section className="rounded-lg border border-gray-200 p-4 dark:border-zinc-700">
-        <h2 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">AI key</h2>
+        <h2 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">AI keys</h2>
         <p className="mb-4 text-xs text-gray-500 dark:text-zinc-500">
-          Bring your own API key to enable AI title/summary/topic tagging. Without one, bookmark
-          saving still works, just without AI analysis.
+          Bring your own API key(s) to enable AI title/summary/topic tagging. The starred
+          (favorite) key is tried first — if it fails, the others are tried automatically.
+          Without any key, bookmark saving still works, just without AI analysis.
         </p>
 
         {loading ? (
           <p className="text-sm text-gray-500 dark:text-zinc-500">Loading…</p>
         ) : (
           <>
-            {configured && currentProvider && (
-              <p className="mb-4 text-xs text-green-600">
-                Currently using {PROVIDER_LABELS[currentProvider]}.
-              </p>
+            {keys.length > 0 && (
+              <ul className="mb-4 flex flex-col gap-2">
+                {keys.map((key) => (
+                  <li
+                    key={key.provider}
+                    className="flex items-center justify-between rounded border border-gray-200 px-3 py-2 dark:border-zinc-700"
+                  >
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSetFavorite(key.provider)}
+                        disabled={busyProvider !== null || key.isFavorite}
+                        title={key.isFavorite ? 'Tried first' : 'Make this the favorite (tried first)'}
+                        className={`text-lg leading-none disabled:cursor-default ${
+                          key.isFavorite
+                            ? 'text-yellow-500'
+                            : 'text-gray-300 hover:text-yellow-500 dark:text-zinc-600'
+                        }`}
+                      >
+                        {key.isFavorite ? '★' : '☆'}
+                      </button>
+                      <span className="text-sm text-gray-700 dark:text-zinc-300">
+                        {PROVIDER_LABELS[key.provider]}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveKey(key.provider)}
+                      disabled={busyProvider !== null}
+                      className="text-sm text-gray-500 underline hover:text-red-600 disabled:opacity-50 dark:text-zinc-500"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
 
-            <form onSubmit={handleSave} className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
-                  Provider
-                </label>
-                <select
-                  value={provider}
-                  onChange={(e) => setProvider(e.target.value as AiProvider)}
-                  className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                >
-                  {Object.entries(PROVIDER_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {rowError && <p className="mb-4 text-sm text-red-600">{rowError}</p>}
 
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
-                  API key
-                </label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={configured ? 'Enter a new key to replace it' : 'Paste your API key'}
-                  required
-                  className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                />
-              </div>
+            {availableProviders.length > 0 ? (
+              <form onSubmit={handleAddKey} className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+                    Provider
+                  </label>
+                  <select
+                    value={availableProviders.includes(addProvider) ? addProvider : availableProviders[0]}
+                    onChange={(e) => setAddProvider(e.target.value as AiProvider)}
+                    className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  >
+                    {availableProviders.map((p) => (
+                      <option key={p} value={p}>
+                        {PROVIDER_LABELS[p]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {message && <p className="text-sm text-green-600">{message}</p>}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">
+                    API key
+                  </label>
+                  <input
+                    type="password"
+                    value={addApiKey}
+                    onChange={(e) => setAddApiKey(e.target.value)}
+                    placeholder="Paste your API key"
+                    required
+                    className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  />
+                </div>
 
-              <div className="flex gap-2">
+                {addError && <p className="text-sm text-red-600">{addError}</p>}
+                {addMessage && <p className="text-sm text-green-600">{addMessage}</p>}
+
                 <button
                   type="submit"
-                  disabled={saving}
-                  className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
+                  disabled={adding}
+                  className="self-start rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-zinc-100"
                 >
-                  {saving ? 'Saving…' : 'Save'}
+                  {adding ? 'Saving…' : 'Add key'}
                 </button>
-                {configured && (
-                  <button
-                    type="button"
-                    onClick={handleRemove}
-                    disabled={saving}
-                    className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    Remove key
-                  </button>
-                )}
-              </div>
-            </form>
+              </form>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-zinc-500">
+                All providers are configured. Remove one above to add a different key.
+              </p>
+            )}
           </>
         )}
       </section>

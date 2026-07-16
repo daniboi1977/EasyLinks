@@ -2,25 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthedSupabase } from '@/lib/supabase/api';
 import { AI_PROVIDERS, type AiProvider } from '@/lib/ai';
 
-// Whether the user has configured an AI key, and which provider — never the
-// key itself. Used by the Settings page to show current state.
+// Lists all providers the user has a saved key for, and which one is the
+// favorite (tried first). Never returns the key itself. Used by the Settings
+// page to show current state.
 export async function GET(req: NextRequest) {
   const auth = await getAuthedSupabase(req);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { data, error } = await auth.supabase
-    .from('user_ai_settings')
-    .select('provider')
-    .maybeSingle();
+    .from('user_ai_keys')
+    .select('provider, is_favorite')
+    .order('is_favorite', { ascending: false })
+    .order('provider', { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  if (!data) return NextResponse.json({ configured: false });
-  return NextResponse.json({ configured: true, provider: data.provider });
+  const keys = (data ?? []).map((row) => ({
+    provider: row.provider as AiProvider,
+    isFavorite: row.is_favorite as boolean,
+  }));
+  return NextResponse.json({ keys });
 }
 
-// Saves (or replaces) the user's provider + API key. The key is written straight
-// into Supabase Vault by the set_user_ai_key() Postgres function — it is never
-// stored in a plain column and this route never echoes it back.
+// Saves (or replaces) a key for one provider. The key is written straight into
+// Supabase Vault by the set_user_ai_key() Postgres function — it is never
+// stored in a plain column and this route never echoes it back. A user's
+// first-ever key is automatically made the favorite.
 export async function POST(req: NextRequest) {
   const auth = await getAuthedSupabase(req);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -39,16 +45,6 @@ export async function POST(req: NextRequest) {
     p_provider: provider,
     p_api_key: apiKey.trim(),
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ ok: true });
-}
-
-export async function DELETE(req: NextRequest) {
-  const auth = await getAuthedSupabase(req);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { error } = await auth.supabase.rpc('delete_user_ai_key');
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
