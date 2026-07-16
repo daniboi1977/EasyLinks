@@ -22,4 +22,13 @@ export interface AnalyzeResult {
   topics: string[];
 }
 
-export type AiProvider = 'gemini' | 'anthropic' | 'openai';
+export type AiProvider =
+  | 'gemini'
+  | 'anthropic'
+  | 'openai'
+  | 'openrouter'
+  | 'groq'
+  | 'mistral'
+  | 'together'
+  | 'deepseek'
+  | 'huggingface';

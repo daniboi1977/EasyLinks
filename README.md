@@ -49,10 +49,11 @@ extension, or an installed Android app.
   Windows/Mac desktop app — those platforms don't support installing a site
   this way in the same one-tap manner. On any device, though, the site works
   fine simply opened in a normal browser tab, without installing anything.
-- **PDF analysis isn't available with an OpenAI key.** If you choose OpenAI
-  as your AI provider, image analysis works but PDF analysis does not (a
-  known limitation of OpenAI's API, not a bug). Use Gemini or Anthropic
-  (Claude) as your provider if you plan to save PDFs.
+- **Image/PDF analysis isn't available with every provider.** Gemini and
+  Anthropic (Claude) support both images and PDFs. OpenAI and OpenRouter
+  support images but not PDFs. Groq, Mistral, Together AI, DeepSeek, and
+  Hugging Face are text-only — use Gemini or Anthropic as your provider if
+  you plan to save image or PDF bookmarks.
 - **Some sites block automated fetching** (notably X/Twitter). If AI
   analysis fails on a post like this, the app will ask you to paste the
   post's text in manually instead.
@@ -66,14 +67,21 @@ extension, or an installed Android app.
 
 ## Setting up AI tagging (optional but recommended)
 
-AI tagging needs an API key from one of three providers. You only need one.
-Free tiers exist for all three and are generally more than enough for
-personal bookmark tagging.
+AI tagging needs an API key from one of several supported providers. You
+only need one, and can add more later for automatic fallback if one fails
+or hits a rate limit. Free tiers exist for most of these and are generally
+more than enough for personal bookmark tagging.
 
 1. Get an API key from whichever provider you prefer:
    - **Google Gemini** — https://aistudio.google.com/apikey
    - **Anthropic (Claude)** — https://console.anthropic.com/settings/keys
    - **OpenAI** — https://platform.openai.com/api-keys
+   - **OpenRouter** — https://openrouter.ai/keys
+   - **Groq** — https://console.groq.com/keys
+   - **Mistral** — https://console.mistral.ai/api-keys
+   - **Together AI** — https://api.together.ai/settings/api-keys
+   - **DeepSeek** — https://platform.deepseek.com/api_keys
+   - **Hugging Face** — https://huggingface.co/settings/tokens
 2. In the app, go to **Settings** (top right / bottom of the page).
 3. Choose your provider from the dropdown, paste in the key, click **Save**.
 
@@ -160,8 +168,6 @@ welcome. Open an issue on this repo, or reach out directly.
 
 Roughly in order of interest, not necessarily priority:
 
-- More AI providers, plus the option to set multiple as fallbacks (if one
-  fails or hits a limit, it tries the next)
 - An iOS version
 - Support for non-Chromium browsers (Firefox, Safari)
 - A paid tier with a higher bookmark limit

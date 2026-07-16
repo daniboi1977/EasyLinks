@@ -11,6 +11,12 @@ const PROVIDER_LABELS: Record<AiProvider, string> = {
   gemini: 'Google Gemini',
   anthropic: 'Anthropic (Claude)',
   openai: 'OpenAI',
+  openrouter: 'OpenRouter',
+  groq: 'Groq',
+  mistral: 'Mistral',
+  together: 'Together AI',
+  deepseek: 'DeepSeek',
+  huggingface: 'Hugging Face',
 };
 
 export default function SettingsPage() {
