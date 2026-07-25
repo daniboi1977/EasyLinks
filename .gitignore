@@ -46,6 +46,7 @@ next-env.d.ts
 # AI tooling / internal docs (kept locally, not published)
 .claude/
 CLAUDE.md
+AGENTS.md
 BOOKMARK_APP_SPEC.md
 CopyStyleRules.md
 Memory.md
