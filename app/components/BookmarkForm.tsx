@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { BookmarkWithTopics, AnalyzeResult } from '@/types';
 
@@ -22,6 +22,21 @@ export default function BookmarkForm({ initialValues, onSubmit, onCancel }: Prop
 
   const [inputMode, setInputMode] = useState<InputMode>('url');
   const [url, setUrl] = useState(initialValues?.url ?? '');
+  const seededUrlRef = useRef(initialValues?.url ?? '');
+
+  // The share screen may resolve a link-wrapper URL (e.g. share.google) after
+  // this form has already mounted with the wrapped URL. Sync the field to the
+  // updated initialValues.url, but only while it still matches what we seeded
+  // it with — once the user edits the field, leave it alone.
+  useEffect(() => {
+    const nextUrl = initialValues?.url ?? '';
+    if (nextUrl && nextUrl !== seededUrlRef.current) {
+      setUrl((current) => (current === seededUrlRef.current ? nextUrl : current));
+      seededUrlRef.current = nextUrl;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues?.url]);
+
   const [fileUrl, setFileUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState(initialValues?.title ?? '');

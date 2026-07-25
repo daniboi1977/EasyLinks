@@ -30,7 +30,9 @@ extension, or an installed Android app.
   tagging" below.
 - **Share sheet on Android** — once installed, "EasyLinks" shows up as a
   target in Android's native Share menu from any app (browser, Reddit,
-  YouTube, etc.), so you can save a link without switching apps.
+  YouTube, etc.), so you can save a link without switching apps. Links
+  shared from Google Discover/Search (wrapped as `share.google/...`) are
+  automatically resolved to the real article URL.
 - **Light/dark mode** — toggle in Settings; remembered per device.
 - **Private per account** — every account only ever sees its own bookmarks.
   There's no shared or public data between users.
